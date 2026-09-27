@@ -87,3 +87,15 @@ def test_pixel_levels_match_jma_legend():
     assert sources._pixel_level((0x0c, 0x00, 0x0c, 255)) == 5
     assert sources._pixel_level((0x80, 0xff, 0xff, 255)) == 0   # 水色（今後の情報に留意）は段階に入れない
     assert sources._pixel_level((0, 0, 0, 0)) == 0
+
+
+def test_typhoon_passing_now_inside_gale():
+    """2026-09-28 06時の南大東村（実測）: 約113km・暴風域85km・強風域の中。『入らない・避難不要』だけで終わらせない。"""
+    st = dict(number='26', name='スリゲ', category='台風', intensity='非常に強い', pressure='945', max_wind='50',
+              location='南大東島の北西約120km', issued='', closest_km=113, closest_at='09月28日 06時ごろ',
+              closest_hours=0, storm_km=85, in_storm_area=False, in_probability_circle=False, in_gale_now=True, url='')
+    a = judge.answer(snap(typhoon=dict(status='ok', storms=[st])), '台風は直撃する？')
+    txt = ''.join(a['lines'])
+    assert '強風域' in txt and 'いま、この地点から約113km' in txt
+    assert '入らない予報' not in txt
+    assert '停電' in txt

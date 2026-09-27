@@ -357,6 +357,13 @@ def typhoon(lat, lon):
             h, la, lo, pr, st, vt = pts[-1]
             best = dict(km=dist_km(lat, lon, la, lo), hours=h, at='', prob_km=pr / 1000,
                         storm_km=(st or 0) / 1000 or None)
+        # いま強風域（風速15m/s以上の範囲）に入っているか。実況・推定の galeWarningArea（中心と半径）で見る
+        gale_now = False
+        for p in fc[1:]:
+            g = p.get('galeWarningArea') or {}
+            if int(p.get('advancedHours', 99)) <= 1 and g.get('center') and g.get('radius'):
+                if dist_km(lat, lon, g['center'][0], g['center'][1]) <= g['radius'] / 1000:
+                    gale_now = True
         # 暴風警戒域に入るか: 予報円半径＋暴風半径（気象庁の円の半径）以内
         in_storm = bool(best and best['storm_km'] and best['km'] <= best['storm_km'])
         in_prob = bool(best and best['prob_km'] and best['km'] <= best['prob_km'])
@@ -371,7 +378,7 @@ def typhoon(lat, lon):
             closest_km=round(best['km']) if best else None, closest_at=best['at'] if best else '',
             closest_hours=round(best['hours']) if best else None,
             storm_km=round(best['storm_km']) if best and best['storm_km'] else None,
-            in_storm_area=in_storm, in_probability_circle=in_prob,
+            in_storm_area=in_storm, in_probability_circle=in_prob, in_gale_now=gale_now,
             url=f'https://www.jma.go.jp/bosai/map.html#contents=typhoon'))
     return dict(status='ok', storms=storms, fetched_at=now_jst(), source='気象庁 台風情報',
                 source_url='https://www.jma.go.jp/bosai/map.html#contents=typhoon')

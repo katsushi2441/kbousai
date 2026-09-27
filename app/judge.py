@@ -187,15 +187,21 @@ def answer(s, msg):
             head = f"台風{st['number']}号" + (f"（{st['name']}）" if st['name'] else '')
             desc = f"{head}は{st['location']}にあり、{st['intensity'] + '勢力で' if st['intensity'] and st['intensity'] != '-' else ''}中心気圧{st['pressure']}hPa。"
             lines.append(desc)
+            if st.get('in_gale_now'):
+                lines.append('この地点は、いま台風の強風域（風速15m/s以上の範囲）に入っています。')
             if st['closest_km'] is not None:
-                near = f"予報では、{st['closest_at'] or '予報期間の終わり'}にこの地点から約{st['closest_km']}kmまで近づきます。"
+                if (st.get('closest_hours') or 0) <= 1:
+                    near = f"いま、この地点から約{st['closest_km']}kmの所まで近づいています（いちばん近い時間帯です）。"
+                else:
+                    near = f"予報では、{st['closest_at'] or '予報期間の終わり'}にこの地点から約{st['closest_km']}kmまで近づきます。"
                 if st['in_probability_circle']:
                     near += '台風の中心が、この地点の上を通る可能性があります（予報円の中）。'
                 if st['in_storm_area']:
                     near += '暴風警戒域に入る予報です。'
-                elif st.get('storm_km') and st['closest_km'] <= st['storm_km'] * 1.3:
+                elif st.get('storm_km') and st['closest_km'] <= st['storm_km'] + max(50, st['storm_km'] * 0.3):
                     # 境目の近くを「入らない」と言い切らない（予報は外れうる・計算は近似）
-                    near += (f"暴風警戒域（半径 約{st['storm_km']}km）のすぐ外を通る予報です。"
+                    area = '暴風域' if (st.get('closest_hours') or 0) <= 1 else '暴風警戒域'
+                    near += (f"{area}（半径 約{st['storm_km']}km）のすぐ外を通る{'位置です' if area == '暴風域' else '予報です'}。"
                              '進路が少しずれれば暴風域に入ります。入る前提で備えてください。')
                 elif st['closest_km'] > 500:
                     near += '暴風警戒域からは離れています。'
@@ -240,9 +246,10 @@ def answer(s, msg):
         lines.append(f"この地点は{'・'.join(risky)}にあたります。{LEVEL_ACTION[3]}")
     elif level >= 2:
         lines.append(LEVEL_ACTION[level if level in LEVEL_ACTION else 2])
-    elif intent == 'typhoon' and any(st.get('in_storm_area') or st.get('in_probability_circle')
-                                     or (st.get('storm_km') and (st.get('closest_km') or 1e9) <= st['storm_km'] * 1.3)
-                                     for st in (s.get('typhoon') or {}).get('storms') or []):
+    elif intent in ('typhoon', 'evacuate') and any(
+            st.get('in_storm_area') or st.get('in_probability_circle') or st.get('in_gale_now')
+            or (st.get('closest_km') or 1e9) <= 300
+            for st in (s.get('typhoon') or {}).get('storms') or []):
         lines.append('いまは避難の段階ではありませんが、風が強まる前に、飛ばされそうな物を片付け、停電・断水に備えてください。'
                      '暴風の中の外出や、川・海・崖の見回りはしないでください。')
     else:
