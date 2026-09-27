@@ -173,7 +173,7 @@ function render(s,a){
  else o+='<p class="na">キキクルを取得できませんでした。</p>';
  var ty=s.typhoon||{};
  if(ty.status==='ok'){if(!ty.storms.length)o+='<p><b>台風</b>：発生中の台風はありません。</p>';
-  ty.storms.forEach(function(t){o+='<p><b>台風'+esc(t.number)+'号'+(t.name?'（'+esc(t.name)+'）':'')+'</b>：'+esc(t.location)+'・'+esc(t.pressure)+'hPa'+(t.max_wind?'・最大風速'+esc(t.max_wind)+'m/s':'')+'<br>この地点に最も近づくのは'+esc(t.closest_at||'予報期間の終わり')+'・約'+esc(t.closest_km)+'km'+(t.in_storm_area?'<span class="tag" style="border-color:#ff2800;color:#b01e00">暴風警戒域に入る予報</span>':'')+(t.in_probability_circle?'<span class="tag">予報円の中</span>':'')+'<br><span class="note">'+esc(t.issued)+' 発表　<a href="'+esc(t.url)+'" target="_blank" rel="noopener">気象庁 台風情報</a></span></p>'});}
+  ty.storms.forEach(function(t){o+='<p><b>台風'+esc(t.number)+'号'+(t.name?'（'+esc(t.name)+'）':'')+'</b>：'+esc(t.location)+'・'+esc(t.pressure)+'hPa'+(t.max_wind?'・最大風速'+esc(t.max_wind)+'m/s':'')+'<br>この地点に最も近づくのは'+esc(t.closest_at||'予報期間の終わり')+'・約'+esc(t.closest_km)+'km'+(t.in_gale_now?'<span class="tag" style="border-color:#e0a000;color:#7a5600">いま強風域の中</span>':'')+(t.in_storm_area?'<span class="tag" style="border-color:#ff2800;color:#b01e00">暴風警戒域に入る予報</span>':'')+(t.in_probability_circle?'<span class="tag">予報円の中</span>':'')+'<br><span class="note">'+esc(t.issued)+' 発表　<a href="'+esc(t.url)+'" target="_blank" rel="noopener">気象庁 台風情報</a></span></p>'});}
  else o+='<p class="na">台風情報を取得できませんでした。</p>';
  o+='<p><b>川の水位</b>：<a href="'+esc(s.river.url)+'" target="_blank" rel="noopener">'+esc(s.river.name)+'</a>で最寄りの水位観測所を見てください。<br><span class="note">自動で集めることが禁止されているため、この画面には取り込んでいません。</span></p>';
  setCard('c-obs','',o,['river','rain','typhoon','landslide','evacuate'].indexOf(I)>=0);
