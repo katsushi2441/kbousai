@@ -1,22 +1,21 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-BP0650KDFR"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-BP0650KDFR');</script>
-<title>Kurage 防災AIチャット｜住所で警報・避難・川と台風を確認</title>
+__GA__
+<title>__BRAND__｜住所で警報・避難・川と台風を確認</title>
 <meta name="description" content="住所か現在地を入れて「逃げた方がいい？」「川は氾濫しそう？」「津波は来る？」「台風は直撃する？」と聞くと、その場所のハザード・警報・観測（雨量・キキクル・台風）・避難情報・被害を1画面に集め、いまやることを答えます。">
-<link rel="canonical" href="https://kurage.exbridge.jp/kbousai.php/">
+<link rel="canonical" href="__PUBLIC__">
 <link rel="icon" href="static/favicon.png">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Kurage 防災AIチャット">
-<meta property="og:title" content="Kurage 防災AIチャット｜いま逃げた方がいい？に答える">
+<meta property="og:site_name" content="__BRAND__">
+<meta property="og:title" content="__BRAND__｜いま逃げた方がいい？に答える">
 <meta property="og:description" content="住所か現在地で、ハザード・警報・観測・避難・被害を1画面に。川・津波・台風・土砂の質問に、気象庁と自治体のデータで答えます。">
-<meta property="og:url" content="https://kurage.exbridge.jp/kbousai.php/">
-<meta property="og:image" content="https://kurage.exbridge.jp/kbousai.php/static/ogp.png">
+<meta property="og:url" content="__PUBLIC__">
+<meta property="og:image" content="__PUBLIC__static/ogp.png">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
-{"@type":"WebSite","name":"Kurage 防災AIチャット","url":"https://kurage.exbridge.jp/kbousai.php/","publisher":{"@type":"Organization","name":"株式会社エクスブリッジ","url":"https://exbridge.jp/"},
- "potentialAction":{"@type":"SearchAction","target":"https://kurage.exbridge.jp/kbousai.php/?q={address}","query-input":"required name=address"}},
+{"@type":"WebSite","name":"__BRAND__","url":"__PUBLIC__",
+ "potentialAction":{"@type":"SearchAction","target":"__PUBLIC__?q={address}","query-input":"required name=address"}},
 {"@type":"FAQPage","mainEntity":[
  {"@type":"Question","name":"「逃げた方がいい？」にはどう答えていますか？","acceptedAnswer":{"@type":"Answer","text":"市区町村の避難情報、気象庁の警報・注意報、キキクル（危険度分布）を内閣府ガイドラインの警戒レベルにそろえ、その地点が家屋倒壊等氾濫想定区域・土砂災害警戒区域・津波浸水想定区域にあたるかと組み合わせて、規則で結論を決めています。AIは結論を言い換えるだけで、結論は変えません。"}},
  {"@type":"Question","name":"川の水位は見られますか？","acceptedAnswer":{"@type":"Answer","text":"国土交通省「川の防災情報」は、ツールによる定期的なデータ収集を控えるよう求めているため取り込んでいません。代わりに気象庁のキキクル（洪水・指定河川洪水予報）を地点の周り約2kmで読み、水位は川の防災情報へのリンクで案内します。"}},
@@ -83,7 +82,7 @@ footer p{margin:4px 0}
 @media (prefers-reduced-motion:no-preference){.msg{animation:in .18s ease-out}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
 </style></head><body>
 <header><div class="bar">
- <a class="brand" href="./"><img class="brand-mark" src="https://exbridge.jp/images/logo-mark-128.png" width="36" height="36" alt="株式会社エクスブリッジ"><span>Kurage 防災AIチャット<small>EXBRIDGE, INC.</small></span></a>
+ <a class="brand" href="./"><img class="brand-mark" src="__LOGO__" width="36" height="36" alt="__LOGO_ALT__"><span>__BRAND__<small>__BRAND_SUB__</small></span></a>
 </div></header>
 <main class="wrap">
  <div class="intro">
@@ -129,11 +128,12 @@ footer p{margin:4px 0}
 <footer>
  <p>出典：気象庁（警報・注意報、アメダス、キキクル、台風情報、津波警報・注意報）を加工して作成。国土交通省 国土数値情報（洪水浸水想定区域・土砂災害警戒区域・津波浸水想定）、国土地理院（住所検索・逆ジオコーダー・標高）、各自治体の避難情報。</p>
  <p>この画面は公開データを集めた参考情報です。避難の判断は、市区町村の避難情報と、ご自身の目で見た周りの状況を優先してください。</p>
- <p>関連：<a href="../kflood.php/">洪水・内水ハザードマップ</a>・<a href="../khazard.php/">土砂災害ハザードマップ</a>・<a href="../ktsunami.php/">津波浸水想定マップ</a>・<a href="../krefuge.php/">避難所マップ</a>　運営：<a href="https://exbridge.jp/">株式会社エクスブリッジ</a></p>
+__FOOTER__
 </footer>
 <script>
 (function(){
 var $=function(id){return document.getElementById(id)};
+var CFG=__CFG__;
 var loc=null; // {q} or {lat,lon}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function add(cls,html){var d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;$('log').appendChild(d);$('log').scrollTop=$('log').scrollHeight;return d}
@@ -148,7 +148,8 @@ function render(s,a){
  var h=a.hazards.length?'<ul>'+a.hazards.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>':'<p class="empty">取得できませんでした。</p>';
  var el=(s.flood&&s.flood.elevation)||{};
  if(el.m!=null&&!a.hazards.some(function(x){return x.indexOf('標高')>=0}))h+='<p class="note">この地点の標高 約'+esc(el.m)+'m（国土地理院）</p>';
- h+='<div class="src">国土数値情報・自治体のハザードマップを当社で判定。<a href="../kflood.php/?q='+encodeURIComponent(s.address)+'">洪水の詳細</a>・<a href="../khazard.php/?q='+encodeURIComponent(s.address)+'">土砂の詳細</a>・<a href="../ktsunami.php/?q='+encodeURIComponent(s.address)+'">津波の詳細</a></div>';
+ var hl=[['kflood','洪水の詳細'],['khazard','土砂の詳細'],['ktsunami','津波の詳細']].filter(function(x){return CFG.links[x[0]]}).map(function(x){return '<a href="'+esc(CFG.links[x[0]])+'?q='+encodeURIComponent(s.address)+'">'+x[1]+'</a>'}).join('・');
+ h+='<div class="src">国土数値情報・自治体のハザードマップで判定。'+hl+'</div>';
  setCard('c-hazard','',h,I==='evacuate');
  // 警報
  var j=(s.flood||{}).jma||{};var w='';
@@ -182,7 +183,7 @@ function render(s,a){
   e+='<div class="src">'+esc(al.fetched_at||'')+' 取得　<a href="'+esc(al.source_url||'#')+'" target="_blank" rel="noopener">'+esc(al.source||'')+'</a></div>';}
  else e+='<p class="na">この市区町村の避難情報（避難指示など）は、まだ自動で取り込めていません。市区町村のサイト・防災無線で確かめてください。</p><p class="note">取り込み済み：名古屋市・東京都・千葉県・神奈川県・静岡県</p>';
  var rf=s.refuge||{};
- if(!na(rf)&&rf.shelters&&rf.shelters.length){e+='<p style="margin-top:8px"><b>近い避難先</b>'+(rf.hazard_label&&rf.hazard_label!=='指定なし'?'（'+esc(rf.hazard_label)+'で使える所）':'')+'</p><ul>'+rf.shelters.slice(0,5).map(function(x){return '<li>'+esc(x.name)+'　徒歩'+esc(x.walk_minutes)+'分（約'+esc(x.distance_m)+'m）</li>'}).join('')+'</ul><div class="src"><a href="../krefuge.php/?q='+encodeURIComponent(s.address)+'&hazard='+encodeURIComponent(rf.hazard||'')+'">避難所マップで見る</a>（国土地理院 指定緊急避難場所）</div>';}
+ if(!na(rf)&&rf.shelters&&rf.shelters.length){e+='<p style="margin-top:8px"><b>近い避難先</b>'+(rf.hazard_label&&rf.hazard_label!=='指定なし'?'（'+esc(rf.hazard_label)+'で使える所）':'')+'</p><ul>'+rf.shelters.slice(0,5).map(function(x){return '<li>'+esc(x.name)+'　徒歩'+esc(x.walk_minutes)+'分（約'+esc(x.distance_m)+'m）</li>'}).join('')+'</ul><div class="src">'+(CFG.links.krefuge?'<a href="'+esc(CFG.links.krefuge)+'?q='+encodeURIComponent(s.address)+'&hazard='+encodeURIComponent(rf.hazard||'')+'">避難所マップで見る</a>':'')+'（国土地理院 指定緊急避難場所）</div>';}
  else if(na(rf))e+=naText(rf);
  setCard('c-evac','',e,I==='shelter'||a.level>=3||I==='tsunami');
  // 被害
@@ -199,7 +200,7 @@ function ask(text){
  var a=$('addr').value.trim();
  if(!loc||(loc.q!==undefined&&loc.q!==a)){if(!a){add('bot','<p>先に場所を入れるか、「現在地」を押してください。</p>');$('addr').focus();return}loc={q:a}}
  add('me',esc(text));
- var b=add('bot busy','<p>調べています…（気象庁・自治体・当社のハザード判定）</p>');
+ var b=add('bot busy','<p>調べています…（気象庁・自治体・ハザードの判定）</p>');
  var p=loc.q!==undefined?'q='+encodeURIComponent(loc.q):'lat='+loc.lat+'&lon='+loc.lon;
  fetch('api/ask?'+p+'&msg='+encodeURIComponent(text)).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.detail||'エラー');return j})}).then(function(j){
   var s=j.snapshot,an=j.answer;
@@ -207,11 +208,11 @@ function ask(text){
   b.classList.remove('busy');
   var h=lvBadge(an.level)+an.lines.map(function(x){return '<p>'+esc(x)+'</p>'}).join('');
   if(an.notes.length)h+=an.notes.map(function(x){return '<p class="note">'+esc(x)+'</p>'}).join('');
-  h+='<div class="ai"><b>AIの説明（gemma4・当社サーバー）</b><span class="note">考えています…</span></div>';
+  h+='<div class="ai"><b>AIの説明（'+esc(CFG.ai_label)+'）</b><span class="note">考えています…</span></div>';
   b.innerHTML=h;render(s,an);$('log').scrollTop=$('log').scrollHeight;
   fetch('api/say?token='+encodeURIComponent(j.token)).then(function(r){return r.json()}).then(function(x){
    var ai=b.querySelector('.ai');
-   if(x.status==='ok')ai.innerHTML='<b>AIの説明（gemma4・当社サーバー）</b>'+esc(x.text).replace(/\n+/g,'<br>');
+   if(x.status==='ok')ai.innerHTML='<b>AIの説明（'+esc(CFG.ai_label)+'）</b>'+esc(x.text).replace(/\n+/g,'<br>');
    else ai.innerHTML='<b>AIの説明</b><span class="note">いまAIが混み合っているため、上の答え（規則による判定）をご覧ください。</span>';
    $('log').scrollTop=$('log').scrollHeight;
   }).catch(function(){b.querySelector('.ai').innerHTML='<b>AIの説明</b><span class="note">AIに接続できませんでした。上の答え（規則による判定）をご覧ください。</span>'});

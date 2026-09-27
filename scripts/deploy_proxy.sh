@@ -8,6 +8,10 @@ set -a; . /home/kojima/work/aixec/.env; set +a
 BACKEND="${KBOUSAI_BACKEND_URL:-http://exbridge.ddns.net:18393}"
 TMP=$(mktemp)
 printf '<?php define("KBOUSAI_BACKEND", "%s");\n' "$BACKEND" > "$TMP"
+# 当社の公開先だけ simpletrack（kurage版）を差し込む。配布物の本体には入れない
+cat >> "$TMP" <<'PHPEOF'
+define('KBOUSAI_TRACK_JS', '<script>(function(){var s=document.createElement("script");s.src="https://kurage.exbridge.jp/simpletrack.php?url="+encodeURIComponent(location.href)+"&ref="+encodeURIComponent(document.referrer);s.async=true;document.head.appendChild(s)})();</script>');
+PHPEOF
 curl -sS -T php/kbousai.php "ftp://${FTP_USER}:${FTP_PASS}@${FTP_HOST}/web/kurage_exbridge_jp/kbousai.php"
 curl -sS -T "$TMP" "ftp://${FTP_USER}:${FTP_PASS}@${FTP_HOST}/web/kurage_exbridge_jp/kbousai_config.php"
 rm -f "$TMP"

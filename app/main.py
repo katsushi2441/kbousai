@@ -22,9 +22,23 @@ from fastapi.staticfiles import StaticFiles
 from app import judge, sources
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OLLAMA = os.environ.get('KBOUSAI_OLLAMA', 'http://192.168.0.3:11434')
+OLLAMA = os.environ.get('KBOUSAI_OLLAMA', 'http://127.0.0.1:11434')
 MODEL = os.environ.get('KBOUSAI_MODEL', 'gemma4:12b-it-qat')
-PUBLIC = 'https://kurage.exbridge.jp/kbousai.php/'
+E = os.environ.get
+PUBLIC = E('KBOUSAI_PUBLIC_URL', 'http://127.0.0.1:18393/')
+# 画面に出す名前・ロゴ・計測・関連リンク。**設定が無いときは計測タグを出さない**（配布先から当社へ計測が飛ばないように）
+BRAND = E('KBOUSAI_BRAND', '防災AIチャット')
+BRAND_SUB = E('KBOUSAI_BRAND_SUB', '')
+LOGO = E('KBOUSAI_LOGO_URL', 'static/mascot.png')
+LOGO_ALT = E('KBOUSAI_LOGO_ALT', BRAND)
+GA_ID = E('KBOUSAI_GA_ID', '')
+OPERATOR = E('KBOUSAI_OPERATOR', '')            # 例: 株式会社〇〇
+OPERATOR_URL = E('KBOUSAI_OPERATOR_URL', '')
+AI_LABEL = E('KBOUSAI_AI_LABEL', MODEL.split(':')[0])
+# 同じサーバーに置いた各エンジンの画面（詳しく見るリンク）。空ならリンクを出さない
+LINKS = {k: E(f'KBOUSAI_LINK_{k.upper()}', '') for k in ('kflood', 'khazard', 'ktsunami', 'krefuge')}
+LINK_NAMES = {'kflood': '洪水・内水ハザードマップ', 'khazard': '土砂災害ハザードマップ',
+              'ktsunami': '津波浸水想定マップ', 'krefuge': '避難所マップ'}
 
 app = FastAPI(title='Kurage 防災AIチャット', docs_url=None, redoc_url=None, openapi_url=None)
 app.mount('/static', StaticFiles(directory=os.path.join(ROOT, 'static')), name='static')
@@ -142,8 +156,27 @@ def healthz():
 
 @app.get('/', response_class=HTMLResponse)
 def index():
+    import html as H
+    import json as J
     with open(os.path.join(ROOT, 'templates', 'index.html'), encoding='utf-8') as f:
-        return HTMLResponse(f.read(), headers={'Cache-Control': 'no-cache'})
+        page = f.read()
+    ga = ('<script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>'
+          "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}"
+          "gtag('js',new Date());gtag('config','%s');</script>" % (H.escape(GA_ID), H.escape(GA_ID))) if GA_ID else ''
+    rel = '・'.join(f'<a href="{H.escape(u)}">{LINK_NAMES[k]}</a>' for k, u in LINKS.items() if u)
+    foot = ''
+    if rel or OPERATOR:
+        foot = ' <p>' + (f'関連：{rel}' if rel else '')
+        if OPERATOR:
+            op = f'<a href="{H.escape(OPERATOR_URL)}">{H.escape(OPERATOR)}</a>' if OPERATOR_URL else H.escape(OPERATOR)
+            foot += f'　運営：{op}'
+        foot += '</p>'
+    cfg = J.dumps(dict(links={k: v for k, v in LINKS.items() if v}, ai_label=AI_LABEL), ensure_ascii=False)
+    for k, v in (('__GA__', ga), ('__PUBLIC__', H.escape(PUBLIC)), ('__BRAND_SUB__', H.escape(BRAND_SUB)),
+                 ('__BRAND__', H.escape(BRAND)), ('__LOGO_ALT__', H.escape(LOGO_ALT)), ('__LOGO__', H.escape(LOGO)),
+                 ('__FOOTER__', foot), ('__CFG__', cfg.replace('</', '<\\/'))):
+        page = page.replace(k, v)
+    return HTMLResponse(page, headers={'Cache-Control': 'no-cache'})
 
 
 @app.get('/robots.txt', response_class=PlainTextResponse)
@@ -161,7 +194,10 @@ def sitemap():
 
 @app.get('/llms.txt', response_class=PlainTextResponse)
 def llms():
-    with open(os.path.join(ROOT, 'llms.txt'), encoding='utf-8') as f:
+    p = os.path.join(ROOT, 'llms.txt')
+    if not os.path.exists(p):
+        raise HTTPException(404)
+    with open(p, encoding='utf-8') as f:
         return f.read()
 
 

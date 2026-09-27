@@ -1,9 +1,10 @@
 <?php
-// Kurage 防災AIチャット (kbousai) — kurage.exbridge.jp 上の公開入口。
-// 当社サーバー :18393 への透過プロキシ。UIは相対パス(api/...)なので
+// 防災AIチャット (kbousai) の公開入口（PHP だけのレンタルサーバーに置く）。
+// kbousai を動かしているサーバー :18393 への透過プロキシ。UIは相対パス(api/...)なので
 // /kbousai.php/ (末尾スラッシュ) を起点に PATH_INFO で中継する。
 // バックエンドURLは同ディレクトリの kbousai_config.php で定義する(リポジトリには含めない)
 //   <?php define('KBOUSAI_BACKEND', 'http://あなたのサーバー:18393');
+//   任意: define('KBOUSAI_TRACK_JS', '<script>…</script>');  … HTML の </head> 直前に差し込む計測タグ（無ければ何もしない）
 $__cfg = __DIR__ . '/kbousai_config.php';
 if (is_file($__cfg)) { require_once $__cfg; }
 $BACKEND = defined('KBOUSAI_BACKEND') ? KBOUSAI_BACKEND : 'http://127.0.0.1:18393';
@@ -18,7 +19,7 @@ $path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/';
 $qs = isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] !== '' ? '?' . $_SERVER['QUERY_STRING'] : '';
 
 $ch = curl_init($BACKEND . $path . $qs);
-$headers = array('X-Forwarded-Proto: https', 'X-Forwarded-Host: kurage.exbridge.jp');
+$headers = array('X-Forwarded-Proto: https', 'X-Forwarded-Host: ' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''));
 if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) { $headers[] = 'X-Forwarded-For: ' . $_SERVER['HTTP_X_FORWARDED_FOR']; }
 elseif (!empty($_SERVER['REMOTE_ADDR'])) { $headers[] = 'X-Forwarded-For: ' . $_SERVER['REMOTE_ADDR']; }
 // CSV一括判定(multipart)は Content-Type の boundary が要る。中継しないと FastAPI が file を受け取れない
@@ -53,10 +54,9 @@ http_response_code($status);
 foreach (explode("\r\n", substr($res, 0, $hsize)) as $h) {
     if (stripos($h, 'Content-Type:') === 0 || stripos($h, 'Cache-Control:') === 0 || stripos($h, 'Content-Disposition:') === 0) { header($h); }
 }
-// 計測タグ(kurage系はsimpletrack)をHTMLにだけ差し込む
+// 計測タグは設定したときだけ HTML に差し込む
 $body = substr($res, $hsize);
-if (stripos((string)$status . implode('', headers_list()), 'text/html') !== false || strpos($body, '<!doctype html') === 0) {
-    $tag = '<script>(function(){var s=document.createElement("script");s.src="https://kurage.exbridge.jp/simpletrack.php?url="+encodeURIComponent(location.href)+"&ref="+encodeURIComponent(document.referrer);s.async=true;document.head.appendChild(s)})();</script>';
-    $body = str_replace('</head>', $tag . '</head>', $body);
+if (defined('KBOUSAI_TRACK_JS') && (stripos(implode('', headers_list()), 'text/html') !== false || stripos($body, '<!doctype html') === 0)) {
+    $body = str_replace('</head>', KBOUSAI_TRACK_JS . '</head>', $body);
 }
 echo $body;

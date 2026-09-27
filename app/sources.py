@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """kbousai が1地点ぶん集める情報。**取れなかったものは「無い」と言わず status で返す。**
 
-  ハザード  … 当社の kflood(洪水・内水・高潮)・khazard(土砂)・ktsunami(津波浸水想定)
+  ハザード  … 連携する kflood(洪水・内水・高潮)・khazard(土砂)・ktsunami(津波浸水想定)
   警報      … 気象庁の警報・注意報（kflood 経由。住所の文字列で引く）
   観測      … 気象庁 アメダス（最寄り観測所の雨量）とキキクル（危険度分布）のタイルの色
   台風      … 気象庁 台風情報（予報円・暴風警戒域と地点の距離）
@@ -25,7 +25,7 @@ from datetime import datetime, timedelta, timezone
 import requests
 from PIL import Image
 
-UA = {'User-Agent': 'kbousai/1.0 (kurage.exbridge.jp; bousai-chat)'}
+UA = {'User-Agent': os.environ.get('KBOUSAI_UA', 'kbousai/1.0 (bousai-chat)')}
 JST = timezone(timedelta(hours=9))
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -124,9 +124,9 @@ def pref_of(address):
     return m.group(1) if m else None
 
 
-# ---------------------------------------------------------------- 当社のサービス
+# ---------------------------------------------------------------- 連携するエンジン
 def _sibling(base, path, params, xff, timeout=15):
-    """当社の各サービス。利用者の IP を X-Forwarded-For で渡す（各サービスの回数制限を利用者ごとに効かせる）。"""
+    """連携する各エンジン。利用者の IP を X-Forwarded-For で渡す（各サービスの回数制限を利用者ごとに効かせる）。"""
     h = dict(UA)
     if xff:
         h['X-Forwarded-For'] = xff

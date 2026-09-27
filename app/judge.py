@@ -76,7 +76,7 @@ def _hazard_lines(s):
     if nat.get('max'):
         out.append(f"洪水の想定：浸水 {nat['max']['label']}（想定最大規模）")
     elif nat.get('status') == 'uncovered':
-        out.append('洪水の想定：当社のデータに無い地域です（想定なしという意味ではありません）')
+        out.append('洪水の想定：判定に使うデータに無い地域です（想定なしという意味ではありません）')
     elif _ok(fl) and nat:
         out.append('洪水の想定：浸水想定区域の外')
     if nat.get('collapse'):

@@ -1,0 +1,5 @@
+llms.txt export-ignore
+static/ogp.png export-ignore
+scripts/make_ogp.py export-ignore
+scripts/deploy_proxy.sh export-ignore
+.env.sample -export-ignore
