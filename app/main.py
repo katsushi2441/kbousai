@@ -35,6 +35,9 @@ GA_ID = E('KBOUSAI_GA_ID', '')
 OPERATOR = E('KBOUSAI_OPERATOR', '')            # 例: 株式会社〇〇
 OPERATOR_URL = E('KBOUSAI_OPERATOR_URL', '')
 AI_LABEL = E('KBOUSAI_AI_LABEL', MODEL.split(':')[0])
+PV_URL = E('KBOUSAI_PV_URL', '')                # 紹介動画（空なら出さない）
+PV_POSTER = E('KBOUSAI_PV_POSTER', '')
+PV_NOTE = E('KBOUSAI_PV_NOTE', '')
 # 同じサーバーに置いた各エンジンの画面（詳しく見るリンク）。空ならリンクを出さない
 LINKS = {k: E(f'KBOUSAI_LINK_{k.upper()}', '') for k in ('kflood', 'khazard', 'ktsunami', 'krefuge')}
 LINK_NAMES = {'kflood': '洪水・内水ハザードマップ', 'khazard': '土砂災害ハザードマップ',
@@ -171,10 +174,15 @@ def index():
             op = f'<a href="{H.escape(OPERATOR_URL)}">{H.escape(OPERATOR)}</a>' if OPERATOR_URL else H.escape(OPERATOR)
             foot += f'　運営：{op}'
         foot += '</p>'
+    pv = ''
+    if PV_URL:
+        pv = ('<section class="pv" aria-label="紹介動画"><h2>1分でわかる動画</h2>'
+              f'<video src="{H.escape(PV_URL)}" poster="{H.escape(PV_POSTER)}" controls playsinline preload="none" width="1920" height="1080"></video>'
+              + (f'<p class="note">{H.escape(PV_NOTE)}</p>' if PV_NOTE else '') + '</section>')
     cfg = J.dumps(dict(links={k: v for k, v in LINKS.items() if v}, ai_label=AI_LABEL), ensure_ascii=False)
     for k, v in (('__GA__', ga), ('__PUBLIC__', H.escape(PUBLIC)), ('__BRAND_SUB__', H.escape(BRAND_SUB)),
                  ('__BRAND__', H.escape(BRAND)), ('__LOGO_ALT__', H.escape(LOGO_ALT)), ('__LOGO__', H.escape(LOGO)),
-                 ('__FOOTER__', foot), ('__CFG__', cfg.replace('</', '<\\/'))):
+                 ('__FOOTER__', foot), ('__PV__', pv), ('__CFG__', cfg.replace('</', '<\\/'))):
         page = page.replace(k, v)
     return HTMLResponse(page, headers={'Cache-Control': 'no-cache'})
 
