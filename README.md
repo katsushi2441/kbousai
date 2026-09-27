@@ -25,6 +25,15 @@
 
 **川の水位は取り込まない。** 国土交通省「川の防災情報」は「ツール等による定期的なデータ収集は…お控えください」と明記している（2026-09-28 確認）。
 
+## AI から使う（MCP・API）
+- **MCP**: `kbousai_mcp.py`（stdio・Python 標準ライブラリだけ）。ツールは2つ。
+  - `bousai_ask`: 住所か緯度経度＋質問 → 警戒レベル相当といまやること（規則の判定をそのまま返す）
+  - `bousai_facts`: その場所の事実だけ（警報・雨量・キキクル・台風・津波・避難情報・避難先、時点と出典つき）
+  - 登録: `claude mcp add kbousai -e KBOUSAI_API=https://あなたの公開先/kbousai.php/ -- python3 kbousai_mcp.py`
+  - 確認: `python3 tests/mcp_check.py`
+- **HTTP API**: `GET /api/ask?q=<住所>&msg=<質問>`（または `lat=&lon=`）
+- **llms.txt**: AI 検索向けの説明
+
 ## 動かす
 ```
 /usr/bin/python3 -m venv .venv && .venv/bin/pip install -r requirements.txt

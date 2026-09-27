@@ -19,7 +19,8 @@
 - 川の水位: 国土交通省「川の防災情報」が、ツールによる定期的なデータ収集を控えるよう求めているため取り込まない。リンクで案内する
 - 上記5都県市以外の避難情報: 「取得できない」と表示する（「出ていない」とは言わない）
 
-## API
+## API・MCP
+- MCP サーバー同梱（kbousai_mcp.py）: bousai_ask（質問に規則の判定で答える）・bousai_facts（事実だけ）
 - GET https://kurage.exbridge.jp/kbousai.php/api/ask?q=<住所>&msg=<質問>  （または lat=&lon=）
   返り値: snapshot（集めた事実）と answer（intent, level, lines, hazards, notes）
 
