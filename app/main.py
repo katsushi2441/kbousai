@@ -38,6 +38,8 @@ AI_LABEL = E('KBOUSAI_AI_LABEL', MODEL.split(':')[0])
 PV_URL = E('KBOUSAI_PV_URL', '')                # 紹介動画（空なら出さない）
 PV_POSTER = E('KBOUSAI_PV_POSTER', '')
 PV_NOTE = E('KBOUSAI_PV_NOTE', '')
+BUY_URL = E('KBOUSAI_BUY_URL', '')              # 導入版の案内（空なら出さない。配布先では出ない）
+BUY_TEXT = E('KBOUSAI_BUY_TEXT', '')
 # 同じサーバーに置いた各エンジンの画面（詳しく見るリンク）。空ならリンクを出さない
 LINKS = {k: E(f'KBOUSAI_LINK_{k.upper()}', '') for k in ('kflood', 'khazard', 'ktsunami', 'krefuge')}
 LINK_NAMES = {'kflood': '洪水・内水ハザードマップ', 'khazard': '土砂災害ハザードマップ',
@@ -168,6 +170,8 @@ def index():
           "gtag('js',new Date());gtag('config','%s');</script>" % (H.escape(GA_ID), H.escape(GA_ID))) if GA_ID else ''
     rel = '・'.join(f'<a href="{H.escape(u)}">{LINK_NAMES[k]}</a>' for k, u in LINKS.items() if u)
     foot = ''
+    if BUY_URL:
+        rel = (rel + '・' if rel else '') + f'<a href="{H.escape(BUY_URL)}" target="_blank" rel="noopener">導入版（Kurage App Store）</a>'
     if rel or OPERATOR:
         foot = ' <p>' + (f'関連：{rel}' if rel else '')
         if OPERATOR:
@@ -179,10 +183,14 @@ def index():
         pv = ('<section class="pv" aria-label="紹介動画"><h2>1分でわかる動画</h2>'
               f'<video src="{H.escape(PV_URL)}" poster="{H.escape(PV_POSTER)}" controls playsinline preload="none" width="1920" height="1080"></video>'
               + (f'<p class="note">{H.escape(PV_NOTE)}</p>' if PV_NOTE else '') + '</section>')
+    buy = ''
+    if BUY_URL:
+        buy = ('<section class="buy" aria-label="導入版"><p><b>このチャットを、自治体・事務所・会社の名前で公開できます</b>'
+               f'{H.escape(BUY_TEXT)}</p><a class="cta" href="{H.escape(BUY_URL)}" target="_blank" rel="noopener">導入版を見る（Kurage App Store）</a></section>')
     cfg = J.dumps(dict(links={k: v for k, v in LINKS.items() if v}, ai_label=AI_LABEL), ensure_ascii=False)
     for k, v in (('__GA__', ga), ('__PUBLIC__', H.escape(PUBLIC)), ('__BRAND_SUB__', H.escape(BRAND_SUB)),
                  ('__BRAND__', H.escape(BRAND)), ('__LOGO_ALT__', H.escape(LOGO_ALT)), ('__LOGO__', H.escape(LOGO)),
-                 ('__FOOTER__', foot), ('__PV__', pv), ('__CFG__', cfg.replace('</', '<\\/'))):
+                 ('__FOOTER__', foot), ('__PV__', pv), ('__BUY__', buy), ('__CFG__', cfg.replace('</', '<\\/'))):
         page = page.replace(k, v)
     return HTMLResponse(page, headers={'Cache-Control': 'no-cache'})
 
