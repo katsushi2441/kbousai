@@ -116,6 +116,8 @@ footer p{margin:4px 0}
      <button type="button" class="chip">台風は直撃する？</button>
      <button type="button" class="chip">土砂崩れは大丈夫？</button>
      <button type="button" class="chip">雨はどれくらい？</button>
+     <button type="button" class="chip">台風はいつ近づく？</button>
+     <button type="button" class="chip">電車・交通は？</button>
      <button type="button" class="chip">近くの避難所は？</button>
     </div>
     <div class="row"><input id="q" placeholder="質問を入れる（例：川があふれそう？）" maxlength="200" aria-label="質問">
@@ -217,6 +219,7 @@ function ask(text){
   b.classList.remove('busy');
   var h=lvBadge(an.level)+an.lines.map(function(x){return '<p>'+esc(x)+'</p>'}).join('');
   if(an.notes.length)h+=an.notes.map(function(x){return '<p class="note">'+esc(x)+'</p>'}).join('');
+  if(an.links&&an.links.length)h+='<p class="note">'+an.links.map(function(l){return '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.name)+'</a>'}).join('・')+'</p>';
   h+='<div class="ai"><b>AIの説明（'+esc(CFG.ai_label)+'）</b><span class="note">考えています…</span></div>';
   b.innerHTML=h;render(s,an);$('log').scrollTop=$('log').scrollHeight;
   fetch('api/say?token='+encodeURIComponent(j.token)).then(function(r){return r.json()}).then(function(x){

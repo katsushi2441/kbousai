@@ -103,6 +103,8 @@ def run(name, a):
             text += ['', '平時の想定:'] + ['・' + x for x in ans['hazards']]
         if ans['notes']:
             text += ['', '注意:'] + ['・' + x for x in ans['notes']]
+        if ans.get('links'):
+            text += ['', '確かめる先:'] + [f"・{l['name']} {l['url']}" for l in ans['links']]
         text += ['', '出典: 気象庁・国土数値情報・国土地理院・市区町村（Kurage 防災AIチャット）']
         return '\n'.join(text)
     if name == 'bousai_facts':

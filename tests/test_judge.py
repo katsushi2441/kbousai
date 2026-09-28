@@ -107,3 +107,30 @@ def test_nearby_order_in_same_city_is_mentioned():
     a = judge.answer(s, '逃げた方がいい？')
     assert a['level'] == 0
     assert any('日吉本町3丁目の一部' in x and '警戒レベル4' in x for x in a['lines'])
+
+
+TY = dict(number='26', name='スリゲ', category='台風', intensity='非常に強い', pressure='945', max_wind='50',
+          location='南大東島の北約100km', issued='', closest_km=265, closest_at='10月01日 13時ごろ', closest_hours=70,
+          storm_km=316, in_storm_area=True, in_probability_circle=True, in_gale_now=False, url='')
+
+
+def test_free_questions_seen_on_0928():
+    """2026-09-28 に実際に来た自由な質問。「逃げた方がいい？」の答えに回さない。"""
+    assert judge.intent_of('電車の影響は？') == 'transport'
+    assert judge.intent_of('何時') == 'when'
+    assert judge.intent_of('10月1日はどう') == 'when'
+    assert judge.intent_of('台風はいつ来る？') == 'typhoon'
+    assert judge.intent_of('逃げるのは何時までに？') == 'evacuate'
+
+
+def test_transport_is_honest_and_gives_time():
+    a = judge.answer(snap(typhoon=dict(status='ok', storms=[TY])), '電車の影響は？')
+    txt = ''.join(a['lines'])
+    assert '取り込んでいません' in txt and '10月01日 13時ごろ' in txt
+    assert any('transit.yahoo.co.jp' in l['url'] for l in a['links'])
+
+
+def test_when_without_typhoon_points_to_forecast():
+    a = judge.answer(snap(), '10月1日はどう')
+    assert any('台風が近づく時刻だけ' in x for x in a['lines'])
+    assert any('forecast' in l['url'] for l in a['links'])

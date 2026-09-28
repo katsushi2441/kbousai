@@ -10,6 +10,9 @@ import re
 
 INTENTS = [
     # (key, 表示名, 語)  上から順に当てる
+    # 交通は運行情報を取り込んでいないので、正直にそう言って各社の情報へ案内する（2026-09-28 に「電車の影響は？」が来た）
+    ('transport', '交通への影響', ('電車', '鉄道', '運休', '運転見合わせ', '新幹線', '飛行機', '欠航', '航空', 'バス',
+                               '交通', '通勤', '通学', '高速道路', '通行止め', 'フェリー')),
     ('tsunami', '津波', ('津波', 'つなみ', '高台')),
     ('typhoon', '台風', ('台風', '直撃', '暴風', '上陸', '風が')),
     ('landslide', '土砂災害', ('土砂', 'がけ', '崖', '山崩れ', '土石流', '地すべり', '地滑り')),
@@ -19,14 +22,29 @@ INTENTS = [
     ('evacuate', '避難の判断', ('逃げ', '避難', '危ない', '大丈夫', '安全', 'どうすれば', 'どうしたら')),
 ]
 INTENT_LABEL = {k: lab for k, lab, _ in INTENTS}
+INTENT_LABEL['when'] = 'いつ・見通し'
+
+# 「いつ」「何時」「10月1日はどう」。台風が出ていれば最接近の時刻で答える（2026-09-28 に来た自由な質問）
+WHEN_RE = re.compile(r'いつ|何時|何日|何曜|明日|あした|明後日|あさって|今夜|今晩|今日|週末|見通し|\d+\s*月\s*\d+\s*日|\d+\s*日(は|に|の)')
 
 
 def intent_of(msg):
     m = msg or ''
     for key, _, words in INTENTS:
         if any(w in m for w in words):
+            # 「台風はいつ来る？」は台風の答えに、「電車は明日動く？」は交通の答えに入る（どちらも時刻を答える）
             return key
+    if WHEN_RE.search(m):
+        return 'when'
     return 'evacuate'
+
+
+LINKS = {
+    'transport': [dict(name='鉄道の運行情報（Yahoo!路線情報）', url='https://transit.yahoo.co.jp/diainfo'),
+                  dict(name='道路の交通情報（日本道路交通情報センター）', url='https://www.jartic.or.jp/')],
+    'when': [dict(name='気象庁の天気予報', url='https://www.jma.go.jp/bosai/forecast/'),
+             dict(name='気象庁の台風情報', url='https://www.jma.go.jp/bosai/map.html#contents=typhoon')],
+}
 
 
 LEVEL_ACTION = {
@@ -149,7 +167,7 @@ def _filter_signals(sig, intent):
         'landslide': ('土砂', '大雨', '避難情報'),
         'tsunami': ('津波', '避難情報'),
         'typhoon': ('暴風', '大雨', '高潮', '波浪', '洪水', '土砂', '避難情報', '浸水'),
-    }.get(intent)
+    }.get('typhoon' if intent in ('when', 'transport') else intent)
     if not keys:
         return sig
     return [x for x in sig if any(k in x[1] for k in keys)]
@@ -176,9 +194,14 @@ def answer(s, msg):
         else:
             lines.append('いま、津波警報・注意報は出ていません（気象庁）。')
             lines.append('海の近くで強い揺れ、または長い揺れを感じたら、警報を待たずに高い所へ逃げてください。')
-    elif intent == 'typhoon':
+    elif intent in ('typhoon', 'when', 'transport'):
         ty = s.get('typhoon') or {}
         storms = ty.get('storms') or []
+        if intent == 'transport':
+            lines.append('電車・飛行機・道路の運行情報は、この画面には取り込んでいません。下の各社・各機関の情報で確かめてください。'
+                         '台風が近づくときは、鉄道会社が前もって計画運休を発表することがあります。')
+        if intent == 'when' and not storms:
+            lines.append('この画面で時刻まで答えられるのは、台風が近づく時刻だけです。雨の降り始めや強まる時間は、気象庁の天気予報で確かめてください。')
         if not _ok(ty):
             lines.append('気象庁の台風情報を取得できませんでした。')
         elif not storms:
@@ -246,7 +269,7 @@ def answer(s, msg):
         lines.append(f"この地点は{'・'.join(risky)}にあたります。{LEVEL_ACTION[3]}")
     elif level >= 2:
         lines.append(LEVEL_ACTION[level if level in LEVEL_ACTION else 2])
-    elif intent in ('typhoon', 'evacuate') and any(
+    elif intent in ('typhoon', 'evacuate', 'when', 'transport') and any(
             st.get('in_storm_area') or st.get('in_probability_circle') or st.get('in_gale_now')
             or (st.get('closest_km') or 1e9) <= 300
             for st in (s.get('typhoon') or {}).get('storms') or []):
@@ -277,7 +300,7 @@ def answer(s, msg):
         notes.append('この市区町村の避難情報（避難指示など）は、まだ自動で取り込めていません。市区町村のサイト・防災無線で確かめてください。')
     return dict(intent=intent, intent_label=INTENT_LABEL.get(intent, '避難の判断'), level=level,
                 signals=[dict(level=a, what=b, source=c) for a, b, c in sig_all],
-                risky=risky, hazards=_hazard_lines(s), lines=lines, notes=notes)
+                risky=risky, hazards=_hazard_lines(s), lines=lines, notes=notes, links=LINKS.get(intent, []))
 
 
 def facts_for_ai(s, ans):
