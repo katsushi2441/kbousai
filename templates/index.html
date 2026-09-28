@@ -188,6 +188,7 @@ function render(s,a){
  // 避難
  var e='';var al=(s.flood||{}).alert||{};
  if(al.status==='ok'){e+=al.items&&al.items.length?'<p><b>'+esc(al.place)+'</b>：'+al.items.map(function(x){return '<span class="lv lv'+Math.min(5,x.level||3)+'">警戒レベル'+esc(x.level)+' '+esc(x.label)+'</span>'+(x.area?' '+esc(x.area):'')}).join('<br>')+'</p>':'<p>'+esc(al.place||'この地域')+'に、避難情報（警戒レベル3〜5）は出ていません。</p>';
+  if(al.nearby&&al.nearby.length)e+='<p><b>同じ市区町村の一部の地区</b>：'+al.nearby.slice(0,5).map(function(x){return '<span class="lv lv'+Math.min(5,x.level||3)+'">警戒レベル'+esc(x.level)+' '+esc(x.label||'')+'</span> '+esc(x.target||'')}).join('<br>')+'</p>';
   e+='<div class="src">'+esc(al.fetched_at||'')+' 取得　<a href="'+esc(al.source_url||'#')+'" target="_blank" rel="noopener">'+esc(al.source||'')+'</a></div>';}
  else e+='<p class="na">この市区町村の避難情報（避難指示など）は、まだ自動で取り込めていません。市区町村のサイト・防災無線で確かめてください。</p><p class="note">取り込み済み：名古屋市・東京都・千葉県・神奈川県・静岡県</p>';
  var rf=s.refuge||{};

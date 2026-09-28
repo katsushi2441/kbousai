@@ -263,6 +263,12 @@ def answer(s, msg):
                 tail += '情報が出たら早めに動いてください。'
         lines.append(LEVEL_ACTION[0] + tail)
 
+    near = [x for x in ((s.get('flood') or {}).get('alert') or {}).get('nearby') or [] if x.get('level')]
+    if near:
+        # 同じ市区町村の一部の地区に出ている発令。住所が地区まで分からないので段階には入れないが、黙らない
+        lines.append('同じ市区町村の一部の地区に、避難情報が出ています：'
+                     + '、'.join(f"{x.get('target') or '一部の地区'}（警戒レベル{x['level']} {x.get('label') or ''}）" for x in near[:5])
+                     + '。この地区にお住まいなら、すぐに避難の判断をしてください。')
     ref = s.get('refuge') or {}
     shelters = (ref.get('shelters') or [])[:3]
     if shelters and (intent == 'shelter' or level >= 3 or intent == 'tsunami'):

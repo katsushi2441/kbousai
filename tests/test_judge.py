@@ -99,3 +99,11 @@ def test_typhoon_passing_now_inside_gale():
     assert '強風域' in txt and 'いま、この地点から約113km' in txt
     assert '入らない予報' not in txt
     assert '停電' in txt
+
+
+def test_nearby_order_in_same_city_is_mentioned():
+    s = snap()
+    s['flood']['alert']['nearby'] = [dict(level=4, label='避難指示', target='日吉本町3丁目の一部')]
+    a = judge.answer(s, '逃げた方がいい？')
+    assert a['level'] == 0
+    assert any('日吉本町3丁目の一部' in x and '警戒レベル4' in x for x in a['lines'])
