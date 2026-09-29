@@ -57,6 +57,7 @@ foreach (explode("\r\n", substr($res, 0, $hsize)) as $h) {
 // 計測タグは設定したときだけ HTML に差し込む
 $body = substr($res, $hsize);
 if (defined('KBOUSAI_TRACK_JS') && (stripos(implode('', headers_list()), 'text/html') !== false || stripos($body, '<!doctype html') === 0)) {
-    $body = str_replace('</head>', KBOUSAI_TRACK_JS . '</head>', $body);
+    // 再販パートナー募集の枠（中身は kurage_web/partner-bar.js。kurage.exbridge.jp 以外では何も出さない）
+    $body = str_replace('</head>', KBOUSAI_TRACK_JS . '<script src="https://kurage.exbridge.jp/partner-bar.js" defer></script>' . '</head>', $body);
 }
 echo $body;
