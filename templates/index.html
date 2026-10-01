@@ -1,13 +1,13 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 __GA__
-<title>__BRAND__｜住所で警報・避難・川と台風を確認</title>
-<meta name="description" content="住所か現在地を入れて「逃げた方がいい？」「川は氾濫しそう？」「津波は来る？」「台風は直撃する？」と聞くと、その場所のハザード・警報・観測（雨量・キキクル・台風）・避難情報・被害を1画面に集め、いまやることを答えます。">
+<title>防災AIチャットボット｜住所で警報・避難・川と台風を確認（__BRAND__）</title>
+<meta name="description" content="防災AIチャットボット。住所か現在地を入れて「逃げた方がいい？」「川は氾濫しそう？」「津波は来る？」「台風は直撃する？」と聞くと、その場所のハザード・警報・観測（雨量・キキクル・台風）・避難情報・被害を1画面に集め、いまやることを答えます。">
 <link rel="canonical" href="__PUBLIC__">
 <link rel="icon" href="static/favicon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="__BRAND__">
-<meta property="og:title" content="__BRAND__｜いま逃げた方がいい？に答える">
+<meta property="og:title" content="防災AIチャットボット｜いま逃げた方がいい？に答える（__BRAND__）">
 <meta property="og:description" content="住所か現在地で、ハザード・警報・観測・避難・被害を1画面に。川・津波・台風・土砂の質問に、気象庁と自治体のデータで答えます。">
 <meta property="og:url" content="__PUBLIC__">
 <meta property="og:image" content="__PUBLIC__static/ogp.png">
@@ -17,6 +17,7 @@ __GA__
 {"@type":"WebSite","name":"__BRAND__","url":"__PUBLIC__",
  "potentialAction":{"@type":"SearchAction","target":"__PUBLIC__?q={address}","query-input":"required name=address"}},
 {"@type":"FAQPage","mainEntity":[
+ {"@type":"Question","name":"防災AIチャットボットとは何ですか？","acceptedAnswer":{"@type":"Answer","text":"住所や現在地と質問から、その場所の警報・キキクル・台風の進路・避難情報・ハザードマップを集めて、いまやることを答えるチャットボットです。逃げるかどうかの結論は内閣府の警戒レベルに合わせた規則で決め、AIはその結論を言い換えるだけにしています。"}},
  {"@type":"Question","name":"「逃げた方がいい？」にはどう答えていますか？","acceptedAnswer":{"@type":"Answer","text":"市区町村の避難情報、気象庁の警報・注意報、キキクル（危険度分布）を内閣府ガイドラインの警戒レベルにそろえ、その地点が家屋倒壊等氾濫想定区域・土砂災害警戒区域・津波浸水想定区域にあたるかと組み合わせて、規則で結論を決めています。AIは結論を言い換えるだけで、結論は変えません。"}},
  {"@type":"Question","name":"川の水位は見られますか？","acceptedAnswer":{"@type":"Answer","text":"国土交通省「川の防災情報」は、ツールによる定期的なデータ収集を控えるよう求めているため取り込んでいません。代わりに気象庁のキキクル（洪水・指定河川洪水予報）を地点の周り約2kmで読み、水位は川の防災情報へのリンクで案内します。"}},
  {"@type":"Question","name":"台風が直撃するかはどう判断していますか？","acceptedAnswer":{"@type":"Answer","text":"気象庁の台風情報の予報円と暴風警戒域の中心・半径を1時間ごとに補間し、その地点にいちばん近づく時刻と距離、予報円・暴風警戒域に入るかを計算します。正式な範囲は気象庁の台風情報で確かめてください。"}}
@@ -134,6 +135,11 @@ footer p{margin:4px 0}
  </div>
  __BUY__
  __PV__
+ <section class="about" style="max-width:1120px;margin:18px auto 0;padding:0 16px">
+  <h2 style="font-size:17px;margin:0 0 6px">防災AIチャットボットとは</h2>
+  <p><b>防災AIチャットボットとは、</b>住所や現在地と「逃げた方がいい？」のような質問から、その場所の警報・キキクル・台風の進路・避難情報・ハザードマップを集めて、いまやることを答えるチャットボットです。このチャットボットは、逃げるかどうかの結論を内閣府の警戒レベルに合わせた規則で決め、AI（大規模言語モデル）はその結論を質問に合わせて言い換えるだけにしています。AIが遅いときや止まっているときでも、事実のカードと規則の結論は出ます。</p>
+  __ABOUT_PROMO__
+ </section>
 </main>
 <footer>
  <p>出典：気象庁（警報・注意報、アメダス、キキクル、台風情報、津波警報・注意報）を加工して作成。国土交通省 国土数値情報（洪水浸水想定区域・土砂災害警戒区域・津波浸水想定）、国土地理院（住所検索・逆ジオコーダー・標高）、各自治体の避難情報。</p>

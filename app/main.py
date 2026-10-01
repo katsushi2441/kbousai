@@ -40,6 +40,8 @@ PV_POSTER = E('KBOUSAI_PV_POSTER', '')
 PV_NOTE = E('KBOUSAI_PV_NOTE', '')
 BUY_URL = E('KBOUSAI_BUY_URL', '')              # 導入版の案内（空なら出さない。配布先では出ない）
 BUY_TEXT = E('KBOUSAI_BUY_TEXT', '')
+ABOUT_PROMO = ('<p>自治体の防災ページ・会社の防災担当・不動産会社のサイトに、自社の防災AIチャットボットとして置くこともできます。'
+               '<a href="https://exbridge.jp/solution/bousai-ai-chatbot.html?ref=kbousai-about">防災AIチャットボットの導入について</a></p>')
 # 同じサーバーに置いた各エンジンの画面（詳しく見るリンク）。空ならリンクを出さない
 LINKS = {k: E(f'KBOUSAI_LINK_{k.upper()}', '') for k in ('kflood', 'khazard', 'ktsunami', 'krefuge')}
 LINK_NAMES = {'kflood': '洪水・内水ハザードマップ', 'khazard': '土砂災害ハザードマップ',
@@ -190,6 +192,7 @@ def index():
     cfg = J.dumps(dict(links={k: v for k, v in LINKS.items() if v}, ai_label=AI_LABEL), ensure_ascii=False)
     for k, v in (('__GA__', ga), ('__PUBLIC__', H.escape(PUBLIC)), ('__BRAND_SUB__', H.escape(BRAND_SUB)),
                  ('__BRAND__', H.escape(BRAND)), ('__LOGO_ALT__', H.escape(LOGO_ALT)), ('__LOGO__', H.escape(LOGO)),
+                 ('__ABOUT_PROMO__', ABOUT_PROMO if BUY_URL else ''),   # 導入の案内は当社の公開先だけ（配布先では BUY_URL が空）
                  ('__FOOTER__', foot), ('__PV__', pv), ('__BUY__', buy), ('__CFG__', cfg.replace('</', '<\\/'))):
         page = page.replace(k, v)
     return HTMLResponse(page, headers={'Cache-Control': 'no-cache'})
