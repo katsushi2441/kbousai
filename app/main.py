@@ -72,25 +72,56 @@ def limited(ip, per_min, bucket):
 
 
 # /api/ask の結果を AI の言い換え用に少しだけ持つ（利用者から任意の文を AI に渡させないため）
+# 答えの言葉（2026-10-02）。結論は規則のまま、AIの言い換えだけを選んだ言葉にする。
+# 外国語の質問は、質問の種類（避難・川・台風…）の見分けが日本語の語で作られているので、先に日本語へ直してから見分ける
+LANGS = {
+    'ja': ('日本語', '日本語で'),
+    'easy': ('やさしい日本語', 'やさしい日本語で（短い文で、むずかしい言葉は使わず、言いかえる）'),
+    'en': ('English', 'in English'),
+    'zh': ('中文', '用简体中文'),
+    'ko': ('한국어', '한국어로'),
+    'vi': ('Tiếng Việt', 'bằng tiếng Việt'),
+    'pt': ('Português', 'em português'),
+    'tl': ('Tagalog', 'sa wikang Tagalog'),
+    'ne': ('नेपाली', 'नेपाली भाषामा'),
+}
+
+
+def to_japanese(msg):
+    """外国語の質問を日本語に直す（質問の種類を見分けるためだけに使う）。失敗したら元のまま返す"""
+    try:
+        r = requests.post(f'{OLLAMA}/api/generate', timeout=20, json=dict(
+            model=MODEL, stream=False, think=False, keep_alive='30m',
+            prompt=f'次の質問を、自然な日本語の1文に訳してください。訳だけを書いてください。\n\n{msg}',
+            options=dict(temperature=0, num_predict=80)))
+        r.raise_for_status()
+        t = (r.json().get('response') or '').strip().splitlines()
+        return t[0][:200] if t else msg
+    except Exception:  # noqa: BLE001
+        return msg
+
+
 _asked = {}
 _asked_lock = threading.Lock()
 
 
-def _remember(facts, msg):
+def _remember(facts, msg, lang='ja'):
     tok = secrets.token_urlsafe(12)
     with _asked_lock:
-        _asked[tok] = (time.time(), facts, msg)
+        _asked[tok] = (time.time(), facts, msg, lang)
         for k in [k for k, v in _asked.items() if time.time() - v[0] > 900]:
             _asked.pop(k, None)
     return tok
 
 
 @app.get('/api/ask')
-def api_ask(request: Request, q: str = '', lat: float = None, lon: float = None, msg: str = ''):
+def api_ask(request: Request, q: str = '', lat: float = None, lon: float = None, msg: str = '', lang: str = 'ja'):
     ip = client_ip(request)
     if limited(ip, 15, 'ask'):
         raise HTTPException(429, '短い時間に多くの質問がありました。1分ほど待ってからもう一度どうぞ')
     msg = (msg or '').strip()[:200]
+    if lang not in LANGS:
+        raise HTTPException(400, '答えの言葉の指定が正しくありません')
     if lat is not None and lon is not None:
         if not (20 < lat < 46 and 122 < lon < 154):
             raise HTTPException(400, '日本の中の場所を指定してください')
@@ -107,24 +138,29 @@ def api_ask(request: Request, q: str = '', lat: float = None, lon: float = None,
         if not g:
             raise HTTPException(404, 'その住所が見つかりませんでした。都道府県から入れてみてください')
         lat, lon, addr, how = g['lat'], g['lon'], g['address'], 'address'
-    intent = judge.intent_of(msg)
+    # 外国語の質問は日本語に直してから見分ける（日本語の語が1つも当たらないときだけ。chip の日本語はそのまま当たる）
+    msg_ja = msg
+    if lang not in ('ja', 'easy') and msg and not any(any(w in msg for w in ws) for _, _, ws in judge.INTENTS):
+        msg_ja = to_japanese(msg)
+    intent = judge.intent_of(msg_ja)
     hz = sources.REFUGE_HAZARD.get(intent, '')
     key = ('snap', round(lat, 4), round(lon, 4), hz)
     snap = sources.cached(key, 120, lambda: sources.snapshot(lat, lon, addr, ip, hz))
-    ans = judge.answer(snap, msg)
-    tok = _remember(judge.facts_for_ai(snap, ans), msg)
+    ans = judge.answer(snap, msg_ja)
+    tok = _remember(judge.facts_for_ai(snap, ans), msg, lang)
     return JSONResponse(dict(located_by=how, snapshot=snap, answer=ans, token=tok),
                         headers={'Cache-Control': 'no-store'})
 
 
 _ai_sem = threading.BoundedSemaphore(2)
 
-AI_RULES = """あなたは防災の案内係です。下の「事実」だけを使って、利用者の質問に日本語で答えてください。
+AI_RULES = """あなたは防災の案内係です。下の「事実」だけを使って、利用者の質問に__LANG__答えてください。
 - 事実に無い情報（数字・地名・予報・施設）を足さない
 - 質問への答えは「判定」の行にある。判定に書いてあることを「分かりません」と言わない。判定に無いことだけ「この画面では分かりません」と言う
 - 「判定」の結論（避難すべきか、どの段階か）を変えない。弱めない・強めない
 - はじめの1文で、質問への答えを言い切る。次に、その理由になる事実を1〜2つ。最後に、いまやることを1つ
-- 全部で3〜4文、200字以内。見出し・箇条書き・絵文字は使わない
+- 全部で3〜4文（日本語なら200字以内）。見出し・箇条書き・絵文字は使わない
+- 日本語以外で答えるときも、地名・避難先・施設の名前は日本語の表記をそのまま残す（現地で看板と照らし合わせられるように）
 - 医療・保険・法律の判断はしない"""
 
 
@@ -137,14 +173,14 @@ def api_say(request: Request, token: str = ''):
         it = _asked.get(token)
     if not it:
         return JSONResponse(dict(status='expired'))
-    _, facts, msg = it
+    _, facts, msg, lang = it
     if not _ai_sem.acquire(timeout=2):
         return JSONResponse(dict(status='busy'))
     try:
-        prompt = f"{AI_RULES}\n\n# 事実\n{facts}\n\n# 質問\n{msg or 'いま避難した方がいいですか？'}\n\n# 答え\n"
+        prompt = f"{AI_RULES.replace('__LANG__', LANGS[lang][1])}\n\n# 事実\n{facts}\n\n# 質問\n{msg or 'いま避難した方がいいですか？'}\n\n# 答え\n"
         r = requests.post(f'{OLLAMA}/api/generate', timeout=45, json=dict(
             model=MODEL, prompt=prompt, stream=False, think=False, keep_alive='30m',
-            options=dict(temperature=0.2, num_predict=400)))
+            options=dict(temperature=0.2, num_predict=600 if lang not in ('ja', 'easy') else 400)))
         r.raise_for_status()
         text = judge.clean_ai(r.json().get('response'))
         if not text:

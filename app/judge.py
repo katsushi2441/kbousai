@@ -317,4 +317,4 @@ _SAFE = re.compile(r'[\r\n]{3,}')
 
 
 def clean_ai(text):
-    return _SAFE.sub('\n\n', (text or '').strip())[:600]
+    return _SAFE.sub('\n\n', (text or '').strip())[:1000]   # 外国語の答えは文字数が多い（2026-10-02）

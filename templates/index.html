@@ -17,6 +17,7 @@ __GA__
 {"@type":"WebSite","name":"__BRAND__","url":"__PUBLIC__",
  "potentialAction":{"@type":"SearchAction","target":"__PUBLIC__?q={address}","query-input":"required name=address"}},
 {"@type":"FAQPage","mainEntity":[
+ {"@type":"Question","name":"外国語ややさしい日本語でも使えますか？","acceptedAnswer":{"@type":"Answer","text":"使えます。答えの言葉を、やさしい日本語・英語・中国語・韓国語・ベトナム語・ポルトガル語・タガログ語・ネパール語から選べます。逃げるかどうかの結論は日本語と同じ規則で決め、AIはその結論を選んだ言葉で言い換えます。地名や避難先の名前は、現地の看板と照らし合わせられるよう日本語の表記を残します。"}},
  {"@type":"Question","name":"防災AIチャットボットとは何ですか？","acceptedAnswer":{"@type":"Answer","text":"住所や現在地と質問から、その場所の警報・キキクル・台風の進路・避難情報・ハザードマップを集めて、いまやることを答えるチャットボットです。逃げるかどうかの結論は内閣府の警戒レベルに合わせた規則で決め、AIはその結論を言い換えるだけにしています。"}},
  {"@type":"Question","name":"「逃げた方がいい？」にはどう答えていますか？","acceptedAnswer":{"@type":"Answer","text":"市区町村の避難情報、気象庁の警報・注意報、キキクル（危険度分布）を内閣府ガイドラインの警戒レベルにそろえ、その地点が家屋倒壊等氾濫想定区域・土砂災害警戒区域・津波浸水想定区域にあたるかと組み合わせて、規則で結論を決めています。AIは結論を言い換えるだけで、結論は変えません。"}},
  {"@type":"Question","name":"川の水位は見られますか？","acceptedAnswer":{"@type":"Answer","text":"国土交通省「川の防災情報」は、ツールによる定期的なデータ収集を控えるよう求めているため取り込んでいません。代わりに気象庁のキキクル（洪水・指定河川洪水予報）を地点の周り約2kmで読み、水位は川の防災情報へのリンクで案内します。"}},
@@ -63,6 +64,9 @@ button:focus-visible,input:focus-visible,.chip:focus-visible{outline:3px solid #
 .ai b{font-size:12px;color:var(--sub);font-weight:600;display:block}
 .note{font-size:12.5px;color:var(--sub)}
 .ask{padding:12px;border-top:1px solid var(--line)}
+.lang{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:8px;font-size:13px}
+.lang select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.lang .note{flex-basis:100%;font-size:12px;color:var(--sub)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .chip{border:1px solid #b9c6d0;background:#fff;color:var(--ink);border-radius:999px;padding:5px 11px;font-size:13.5px;font-weight:500}
 .chip:hover{border-color:var(--brand)}
@@ -110,6 +114,13 @@ footer p{margin:4px 0}
     <p class="note">結論は決まった規則で出し、AIはそれを言い換えるだけです。AIが遅くても、事実のカードはすぐ出ます。</p></div>
    </div>
    <form class="ask" id="f">
+    <div class="lang"><label for="lang">答えの言葉 / Language</label>
+     <select id="lang">
+      <option value="ja">日本語</option><option value="easy">やさしい日本語</option><option value="en">English</option>
+      <option value="zh">中文</option><option value="ko">한국어</option><option value="vi">Tiếng Việt</option>
+      <option value="pt">Português</option><option value="tl">Tagalog</option><option value="ne">नेपाली</option>
+     </select>
+     <span class="note">言葉を選ぶと、AIの説明がその言葉になります（結論は同じ）。 Choose a language and the AI explanation is written in it.</span></div>
     <div class="chips" id="chips">
      <button type="button" class="chip">逃げた方がいい？</button>
      <button type="button" class="chip">川が氾濫しそう？</button>
@@ -137,7 +148,7 @@ footer p{margin:4px 0}
  __PV__
  <section class="about" style="max-width:1120px;margin:18px auto 0;padding:0 16px">
   <h2 style="font-size:17px;margin:0 0 6px">防災AIチャットボットとは</h2>
-  <p><b>防災AIチャットボットとは、</b>住所や現在地と「逃げた方がいい？」のような質問から、その場所の警報・キキクル・台風の進路・避難情報・ハザードマップを集めて、いまやることを答えるチャットボットです。このチャットボットは、逃げるかどうかの結論を内閣府の警戒レベルに合わせた規則で決め、AI（大規模言語モデル）はその結論を質問に合わせて言い換えるだけにしています。AIが遅いときや止まっているときでも、事実のカードと規則の結論は出ます。</p>
+  <p><b>防災AIチャットボットとは、</b>住所や現在地と「逃げた方がいい？」のような質問から、その場所の警報・キキクル・台風の進路・避難情報・ハザードマップを集めて、いまやることを答えるチャットボットです。このチャットボットは、逃げるかどうかの結論を内閣府の警戒レベルに合わせた規則で決め、AI（大規模言語モデル）はその結論を質問に合わせて言い換えるだけにしています。AIが遅いときや止まっているときでも、事実のカードと規則の結論は出ます。答えの言葉は、やさしい日本語・英語・中国語・韓国語・ベトナム語・ポルトガル語・タガログ語・ネパール語からも選べます。</p>
   __ABOUT_PROMO__
  </section>
 </main>
@@ -219,7 +230,7 @@ function ask(text){
  add('me',esc(text));
  var b=add('bot busy','<p>調べています…（気象庁・自治体・ハザードの判定）</p>');
  var p=loc.q!==undefined?'q='+encodeURIComponent(loc.q):'lat='+loc.lat+'&lon='+loc.lon;
- fetch('api/ask?'+p+'&msg='+encodeURIComponent(text)).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.detail||'エラー');return j})}).then(function(j){
+ fetch('api/ask?'+p+'&msg='+encodeURIComponent(text)+'&lang='+encodeURIComponent($('lang').value)).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.detail||'エラー');return j})}).then(function(j){
   var s=j.snapshot,an=j.answer;
   $('where').textContent=(j.located_by==='gps'?'現在地：':'場所：')+s.address+'（'+s.checked_at+' 時点）';
   b.classList.remove('busy');
@@ -230,7 +241,7 @@ function ask(text){
   b.innerHTML=h;render(s,an);$('log').scrollTop=$('log').scrollHeight;
   fetch('api/say?token='+encodeURIComponent(j.token)).then(function(r){return r.json()}).then(function(x){
    var ai=b.querySelector('.ai');
-   if(x.status==='ok')ai.innerHTML='<b>AIの説明（'+esc(CFG.ai_label)+'）</b>'+esc(x.text).replace(/\n+/g,'<br>');
+   if(x.status==='ok')ai.innerHTML='<b>AIの説明'+($('lang').value!=='ja'?' / AI explanation':'')+'（'+esc(CFG.ai_label)+'）</b>'+esc(x.text).replace(/\n+/g,'<br>');
    else ai.innerHTML='<b>AIの説明</b><span class="note">いまAIが混み合っているため、上の答え（規則による判定）をご覧ください。</span>';
    $('log').scrollTop=$('log').scrollHeight;
   }).catch(function(){b.querySelector('.ai').innerHTML='<b>AIの説明</b><span class="note">AIに接続できませんでした。上の答え（規則による判定）をご覧ください。</span>'});
