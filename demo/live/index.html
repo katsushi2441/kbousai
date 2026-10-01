@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>行政のMCPと自社のMCPを並べて使うAIエージェント</title>
+<title>ハザードマップのMCPと国交省のMCPを並べて使うAIエージェント</title>
 <style>
 :root{--ink:#13232c;--muted:#5a6b74;--line:#d6e2e6;--bg:#f3f7f8;--k:#0a9a8f;--kd:#08796f;--m:#1f4e8c;--md:#173c6b}
 *{box-sizing:border-box}
@@ -34,18 +34,18 @@ section h2{margin:0;padding:8px 12px;font-size:14px;border-bottom:1px solid var(
 footer{font-size:11px;color:var(--muted);padding:0 18px 6px}
 </style></head><body>
 <header>
-  <h1>防災AIチャット × 国土交通データプラットフォーム</h1>
-  <span class="pill pk">当社の MCP</span><span class="pill pm">国交省の MCP</span>
+  <h1>洪水・内水・土砂・津波ハザードマップ × 国土交通データプラットフォーム</h1>
+  <span class="pill pk">ハザードマップの MCP</span><span class="pill pm">国交省の MCP</span>
   <span style="margin-left:auto;font-size:12px;color:var(--muted)">AIエージェント（Claude）が2つの MCP を使い分けて答えます</span>
 </header>
 <div class="q"><b>質問</b><div id="qtext">愛知県名古屋市中川区尹田町に住んでいます。大雨や台風のとき、この場所はどれくらい危ないですか？逃げるならどこへ？あわせて、この場所の周り（半径1km程度）にある施設・建物（PLATEAUなど）・交通のデータを、国土交通データプラットフォームから探して、何が分かるかまとめてください。</div>
 <button id="go" type="button">実行</button></div>
-<div class="stat"><span>当社の MCP <b id="nk">0</b> 回</span><span>国交省の MCP <b id="nm">0</b> 回</span><span>経過 <b id="sec">0</b> 秒</span><span id="state">待機中</span></div>
+<div class="stat"><span>ハザードマップの MCP <b id="nk">0</b> 回</span><span>国交省の MCP <b id="nm">0</b> 回</span><span>経過 <b id="sec">0</b> 秒</span><span id="state">待機中</span></div>
 <main>
   <section><h2>AI が呼んだ道具（MCP）</h2><div class="scroll" id="calls"><p class="wait">「実行」を押すと、AI が呼び出した MCP がここに順に出ます。</p></div></section>
   <section><h2>AI の回答</h2><div class="scroll" id="answer"><p class="wait">すべての呼び出しが終わると、回答がここに出ます。</p></div></section>
 </main>
-<footer>出典: 気象庁・国土数値情報・国土地理院・名古屋市（Kurage 防災AIチャット）／国土交通データプラットフォーム。このサービスは、国土交通データプラットフォームのAPI機能を使用していますが、最新のデータを保証するものではありません。</footer>
+<footer>出典: 気象庁・国土数値情報・国土地理院・名古屋市（Kurage 防災AIチャットの洪水・内水・土砂・津波ハザードマップと警報・避難情報）／国土交通データプラットフォーム。このサービスは、国土交通データプラットフォームのAPI機能を使用していますが、最新のデータを保証するものではありません。</footer>
 <script>
 window.demo={started:false,k:0,m:0,done:false,firstK:false,firstM:false};
 const $=id=>document.getElementById(id);
@@ -99,7 +99,7 @@ $('go').onclick=()=>{
           const [,srv,name]=c.name.split('__'); const k=srv==='kbousai';
           if(k){demo.k++;demo.firstK=true;$('nk').textContent=demo.k}else{demo.m++;demo.firstM=true;$('nm').textContent=demo.m}
           const el=document.createElement('div'); el.className='call '+(k?'k':'m');
-          el.innerHTML=`<div class="t"><span class="pill ${k?'pk':'pm'}">${k?'当社':'国交省'}</span>${esc(LABEL[name]||name)}　<span style="font-weight:400;color:var(--muted)">${esc(inputText(name,c.input||{}))}</span></div><div class="r">…</div>`;
+          el.innerHTML=`<div class="t"><span class="pill ${k?'pk':'pm'}">${k?'ハザード':'国交省'}</span>${esc(LABEL[name]||name)}　<span style="font-weight:400;color:var(--muted)">${esc(inputText(name,c.input||{}))}</span></div><div class="r">…</div>`;
           $('calls').appendChild(el); pending[c.id]={el,name}; $('calls').scrollTop=1e9;
         }else if(c.type==='text'&&c.text.trim()&&!d.message.stop_reason){
           const n=document.createElement('div');n.className='note';n.textContent='AI: '+c.text.trim().slice(0,140);$('calls').appendChild(n);$('calls').scrollTop=1e9;
