@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "kbousai": {"command": "/usr/bin/python3", "args": ["/home/kojima/work/kbousai/kbousai_mcp.py"],
+                "env": {"KBOUSAI_API": "http://127.0.0.1:18393/"}},
+    "mlit": {"command": "/home/kojima/work/kbousai/demo/mlit-dpf-mcp/.venv/bin/python", "args": ["-m", "src.server"],
+             "cwd": "/home/kojima/work/kbousai/demo/mlit-dpf-mcp"}
+  }
+}

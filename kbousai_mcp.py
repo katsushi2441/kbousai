@@ -69,6 +69,8 @@ def facts(s):
     rf = s.get('refuge') or {}
     return {
         '場所': s.get('address'), '時点': s.get('checked_at'),
+        # 他の MCP（国土交通データプラットフォームなど）で周りのデータを探すときは、推測せずこの点を使ってもらう
+        '緯度経度': {'lat': s.get('lat'), 'lon': s.get('lon'), '説明': '住所から求めた地点（国土地理院）。周りの地図データを探すときはこの点を使う'},
         '警報・注意報': {'状態': j.get('status'), '発表中': [i['name'] for i in j.get('items') or []],
                     '発表時刻': j.get('report_at'), '出典': '気象庁'},
         '市区町村の避難情報': ({'状態': '取得済み', '地域': al.get('place'),
@@ -96,7 +98,8 @@ def run(name, a):
     if name == 'bousai_ask':
         d = call_api(a, a.get('question'))
         ans = d['answer']
-        text = [f"場所: {d['snapshot'].get('address')}（{d['snapshot'].get('checked_at')} 時点）",
+        sn = d['snapshot']
+        text = [f"場所: {sn.get('address')}（{sn.get('checked_at')} 時点）・緯度 {sn.get('lat')} 経度 {sn.get('lon')}（住所から求めた地点）",
                 f"警戒レベル相当: {ans['level'] or 'なし'}（規則で判定。変えずに伝えること）", '']
         text += ans['lines']
         if ans['hazards']:
