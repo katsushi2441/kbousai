@@ -225,11 +225,18 @@ def index():
     if BUY_URL:
         buy = ('<section class="buy" aria-label="導入版"><p><b>このチャットを、自治体・事務所・会社の名前で公開できます</b>'
                f'{H.escape(BUY_TEXT)}</p><a class="cta" href="{H.escape(BUY_URL)}" target="_blank" rel="noopener">導入版を見る（Kurage App Store）</a></section>')
+    # 右上の誘導（2026-10-03）。下まで読まない人が多いのでヘッダーにも置く。BUY_URL がある当社の公開先だけ
+    head_cta = ''
+    if BUY_URL:
+        head_cta = ('<nav class="hcta" aria-label="導入と相談">'
+                    f'<a class="hot" href="{H.escape(BUY_URL)}" target="_blank" rel="noopener">導入版</a>'
+                    '<a href="https://exbridge.jp/ai-it-komon.html?ref=kbousai-head-komon">AI-IT顧問</a>'
+                    '<a href="https://kurage.exbridge.jp/reseller.html?ref=kbousai-head-reseller">販売代理店募集</a></nav>')
     cfg = J.dumps(dict(links={k: v for k, v in LINKS.items() if v}, ai_label=AI_LABEL), ensure_ascii=False)
     for k, v in (('__GA__', ga), ('__PUBLIC__', H.escape(PUBLIC)), ('__BRAND_SUB__', H.escape(BRAND_SUB)),
                  ('__BRAND__', H.escape(BRAND)), ('__LOGO_ALT__', H.escape(LOGO_ALT)), ('__LOGO__', H.escape(LOGO)),
                  ('__ABOUT_PROMO__', ABOUT_PROMO if BUY_URL else ''),   # 導入の案内は当社の公開先だけ（配布先では BUY_URL が空）
-                 ('__FOOTER__', foot), ('__PV__', pv), ('__BUY__', buy), ('__CFG__', cfg.replace('</', '<\\/'))):
+                 ('__FOOTER__', foot), ('__HEAD_CTA__', head_cta), ('__PV__', pv), ('__BUY__', buy), ('__CFG__', cfg.replace('</', '<\\/'))):
         page = page.replace(k, v)
     return HTMLResponse(page, headers={'Cache-Control': 'no-cache'})
 
