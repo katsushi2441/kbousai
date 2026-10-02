@@ -226,7 +226,10 @@ function render(s,a){
 function ask(text){
  text=(text||'').trim()||'逃げた方がいい？';
  var a=$('addr').value.trim();
- if(!loc||(loc.q!==undefined&&loc.q!==a)){if(!a){add('bot','<p>先に場所を入れるか、「現在地」を押してください。</p>');$('addr').focus();return}loc={q:a}}
+ // 住所欄に入っている住所を優先する。現在地で調べたあとに別の住所を入れたときも、その住所で調べ直す
+ // （以前は現在地（緯度経度）が残り、住所欄で Enter を押したとき以外は現在地のまま調べていた）
+ if(a&&(!loc||loc.q!==a))loc={q:a};
+ if(!loc){add('bot','<p>先に場所を入れるか、「現在地」を押してください。</p>');$('addr').focus();return}
  add('me',esc(text));
  var b=add('bot busy','<p>調べています…（気象庁・自治体・ハザードの判定）</p>');
  var p=loc.q!==undefined?'q='+encodeURIComponent(loc.q):'lat='+loc.lat+'&lon='+loc.lon;
