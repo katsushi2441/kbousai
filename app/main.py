@@ -148,7 +148,8 @@ def api_ask(request: Request, q: str = '', lat: float = None, lon: float = None,
     snap = sources.cached(key, 120, lambda: sources.snapshot(lat, lon, addr, ip, hz))
     ans = judge.answer(snap, msg_ja)
     tok = _remember(judge.facts_for_ai(snap, ans), msg, lang)
-    return JSONResponse(dict(located_by=how, snapshot=snap, answer=ans, token=tok),
+    area = sources.area_of(lat, lon)
+    return JSONResponse(dict(located_by=how, snapshot=snap, answer=ans, token=tok, area=area),
                         headers={'Cache-Control': 'no-store'})
 
 

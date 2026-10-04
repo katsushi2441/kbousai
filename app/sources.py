@@ -116,6 +116,17 @@ def reverse(lat, lon):
     return f"{m[0]}{m[1]}{r.get('lv01Nm') or ''}".replace('－', '')
 
 
+def area_of(lat, lon):
+    """緯度経度 → 「都道府県＋市区町村」まで（町字は付けない）。Xで共有するときに使う（住所そのものは出さない）"""
+    key = ('rev', round(lat, 4), round(lon, 4))
+    try:
+        j = cached(key, 3600, lambda: _get_json(GSI_REVERSE, {'lat': lat, 'lon': lon}, timeout=8))
+    except Exception:  # noqa: BLE001
+        return ''
+    m = muni_name(((j or {}).get('results') or {}).get('muniCd'))
+    return f"{m[0]}{m[1]}" if m else ''
+
+
 PREF_RE = re.compile(r'^(北海道|東京都|京都府|大阪府|.{2,3}?県)')
 
 

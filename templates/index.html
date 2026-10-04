@@ -165,6 +165,19 @@ var CFG=__CFG__;
 var loc=null; // {q} or {lat,lon}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function add(cls,html){var d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;$('log').appendChild(d);$('log').scrollTop=$('log').scrollHeight;return d}
+// Xで共有：住所は出さず、市区町村までと、その市区町村に出ている警報・注意報だけを書く。リンクは入口（住所なし）に ref を付ける
+function shareBtn(j,an){
+ if(!j.area)return '';
+ var jm=((j.snapshot||{}).flood||{}).jma||{};var it=(jm.items||[]).map(function(x){return x.name});
+ var t='【'+j.area+'】いまの防災情報（'+String(j.snapshot.checked_at||'').slice(5,16).replace('T',' ')+' 時点）\n'
+  +(it.length?'警報・注意報：'+it.slice(0,4).join('・'):'警報・注意報は出ていません')
+  +(an.level>=2?'\n警戒レベル'+an.level+'相当の情報あり':'')
+  +'\n住所か現在地で、自分の場所の危険と避難先を確かめられます';
+ var u=location.origin+location.pathname+'?ref=x-share-kbousai';
+ var x='https://x.com/intent/post?'+new URLSearchParams({text:t,url:u,hashtags:'防災,'+j.area.replace(/^(北海道|東京都|京都府|大阪府|.{2,3}?県)/,'')}).toString();
+ return '<p style="margin:10px 0 0"><a href="'+x+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#0f1419;color:#fff;text-decoration:none;font-weight:800;font-size:13.5px;border-radius:999px;padding:7px 14px">'
+  +'<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M18.9 2H22l-6.8 7.8L23 22h-6.2l-4.8-6.3L6.4 22H3.3l7.3-8.3L1 2h6.3l4.4 5.8L18.9 2Zm-1.1 18h1.7L6.3 3.9H4.5L17.8 20Z"/></svg>'+esc(j.area)+'の防災情報をXで共有</a><br><span class="note">住所は投稿に入りません（市区町村まで）</span></p>';
+}
 function lvBadge(l){return l>=2?'<span class="lv lv'+l+'">警戒レベル'+l+'相当</span>':'<span class="lv lv0">警戒レベル相当の情報なし</span>'}
 function na(d){return !d||d.status==='unavailable'||d.status==='busy'}
 function naText(d){return '<p class="na">'+(d&&d.status==='busy'?'混み合っていて取得できませんでした。':'取得できませんでした。')+'「無い」という意味ではありません。</p>'}
@@ -242,6 +255,7 @@ function ask(text){
   if(an.notes.length)h+=an.notes.map(function(x){return '<p class="note">'+esc(x)+'</p>'}).join('');
   if(an.links&&an.links.length)h+='<p class="note">'+an.links.map(function(l){return '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.name)+'</a>'}).join('・')+'</p>';
   h+='<div class="ai"><b>AIの説明（'+esc(CFG.ai_label)+'）</b><span class="note">考えています…</span></div>';
+  h+=shareBtn(j,an);
   b.innerHTML=h;render(s,an);$('log').scrollTop=$('log').scrollHeight;
   fetch('api/say?token='+encodeURIComponent(j.token)).then(function(r){return r.json()}).then(function(x){
    var ai=b.querySelector('.ai');
