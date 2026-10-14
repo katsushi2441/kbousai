@@ -20,9 +20,23 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIR = os.path.join(ROOT, 'data', 'cards')
 W, H = 1200, 630
-FB = '/usr/share/fonts/opentype/noto/NotoSansCJK-Black.ttc'
-FM = '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc'
-FR = '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'
+# 日本語フォント（Noto Sans CJK）。Ubuntu/Debian は apt install fonts-noto-cjk fonts-noto-cjk-extra で入る。
+# 置き場所が違う環境は KBOUSAI_FONT_DIR に NotoSansCJK-{Black,Bold,Regular}.ttc のあるフォルダを指定する
+_FONT_DIRS = [os.environ.get('KBOUSAI_FONT_DIR', ''), '/usr/share/fonts/opentype/noto', '/usr/share/fonts/noto-cjk',
+              '/usr/share/fonts/google-noto-cjk', '/usr/local/share/fonts']
+
+
+def _font(name):
+    for d in _FONT_DIRS:
+        if d and os.path.exists(os.path.join(d, name)):
+            return os.path.join(d, name)
+    return os.path.join('/usr/share/fonts/opentype/noto', name)
+
+
+FB, FM, FR = _font('NotoSansCJK-Black.ttc'), _font('NotoSansCJK-Bold.ttc'), _font('NotoSansCJK-Regular.ttc')
+# Black が無い環境（fonts-noto-cjk だけ）は Bold で代える
+if not os.path.exists(FB):
+    FB = FM
 ID_RE = re.compile(r'^[A-Za-z0-9_-]{8,16}$')
 
 

@@ -42,3 +42,13 @@ cp systemd/kbousai.service ~/.config/systemd/user/ && systemctl --user enable --
 scripts/deploy_proxy.sh                     # heteml へ公開入口を置く
 /usr/bin/python3 scripts/shot.py 'http://127.0.0.1:18393/?q=愛知県名古屋市中川区' outputs/shots   # 端末幅で撮って横はみ出しを実測
 ```
+
+## 防災カード（`app/card.py`）
+調べた場所に想定されている災害（洪水・内水・高潮・土砂・津波）を、1枚の画像（1200×630）にして共有する。
+画面の「この場所の防災カードを作る」→ `/api/card?token=…` → カードのページ `/c/<id>`（noindex）と画像 `/c/<id>.png`。
+
+- **住所は残さない。** `data/cards/<id>.json` に残すのは市区町村と5つの想定の行だけ（緯度経度・番地・避難所の名前と距離は保存しない）。URL はランダムな ID
+- 想定（平時のハザードマップ）だけを載せ、その時点の警報は入れない（後から見た人が古い警報を「いま」と取り違えないため）
+- 画像は Pillow と日本語フォント（Noto Sans CJK）で描く。Ubuntu/Debian は
+  `sudo apt install fonts-noto-cjk fonts-noto-cjk-extra`。別の場所にあるときは `.env` に `KBOUSAI_FONT_DIR=…`
+- `data/cards/` は利用者が作ったもの。git に入れない（`.gitignore`）
