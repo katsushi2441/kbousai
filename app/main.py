@@ -10,6 +10,7 @@
 - 取れなかった情報は「無い」と言わず「取得できない」と書く
 """
 import os
+import re
 import secrets
 import threading
 import time
@@ -19,7 +20,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import judge, sources
+from app import card, judge, sources
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OLLAMA = os.environ.get('KBOUSAI_OLLAMA', 'http://127.0.0.1:11434')
@@ -149,8 +150,82 @@ def api_ask(request: Request, q: str = '', lat: float = None, lon: float = None,
     ans = judge.answer(snap, msg_ja)
     tok = _remember(judge.facts_for_ai(snap, ans), msg, lang)
     area = sources.area_of(lat, lon)
+    # 防災カードの材料（市区町村と想定の行だけ。緯度経度・住所は入れない）
+    with _asked_lock:
+        _card_src[tok] = (time.time(), card.material(area, ans.get('hazards'), snap.get('checked_at')))
     return JSONResponse(dict(located_by=how, snapshot=snap, answer=ans, token=tok, area=area),
                         headers={'Cache-Control': 'no-store'})
+
+
+_card_src = {}
+
+
+@app.get('/api/card')
+def api_card(request: Request, token: str = ''):
+    """いま判定した場所の防災カードを作る。返すのはカードのページのURLだけ（住所は含めない）"""
+    if limited(client_ip(request), 6, 'card'):
+        raise HTTPException(429, '短い時間に多くのカードを作りました。1分ほど待ってからもう一度どうぞ')
+    with _asked_lock:
+        it = _card_src.get(token)
+        for k in [k for k, v in _card_src.items() if time.time() - v[0] > 900]:
+            _card_src.pop(k, None)
+    if not it or not it[1].get('area') or not it[1].get('rows'):
+        raise HTTPException(404, 'もう一度、住所か現在地で調べてからカードを作ってください')
+    cid = card.save(it[1])
+    return dict(id=cid, url=f'{PUBLIC}c/{cid}', image=f'{PUBLIC}c/{cid}.png', area=it[1]['area'])
+
+
+@app.get('/c/{cid}.png')
+def card_png(cid: str):
+    mat = card.load(cid)
+    if not mat:
+        raise HTTPException(404)
+    return FileResponse(card.png(cid, mat), media_type='image/png', headers={'Cache-Control': 'public, max-age=86400'})
+
+
+@app.get('/c/{cid}', response_class=HTMLResponse)
+def card_page(cid: str):
+    import html as H
+    mat = card.load(cid)
+    if not mat:
+        raise HTTPException(404)
+    area = mat.get('area') or ''
+    when = (mat.get('checked_at') or '')[:10]
+    title = f'{area}の防災カード｜この場所に想定されている災害'
+    desc = '、'.join(f'{n}：{v}' for n, v in mat.get('rows') or [])[:150]
+    rows = ''.join(f'<li><b>{H.escape(n)}</b>　{H.escape(v)}</li>' for n, v in mat.get('rows') or [])
+    url = f'{PUBLIC}c/{cid}'
+    label = f'{area}の防災カード（{when} 判定）'
+    share = 'https://x.com/intent/post?' + __import__('urllib.parse').parse.urlencode(dict(
+        text=f'【{area}】この場所に想定されている災害を1枚にしました。自分の住所でも確かめられます', url=url + '#ref=x-share-kbousai-card',
+        hashtags='防災,' + re.sub(r'^(北海道|東京都|京都府|大阪府|.{2,3}?県)', '', area)))
+    ga = ('<script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>'
+          "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}"
+          "gtag('js',new Date());gtag('config','%s');</script>" % (H.escape(GA_ID), H.escape(GA_ID))) if GA_ID else ''
+    page = f'''<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{H.escape(title)}</title><meta name="description" content="{H.escape(desc)}"><meta name="robots" content="noindex">
+<link rel="canonical" href="{H.escape(url)}"><meta property="og:type" content="article"><meta property="og:title" content="{H.escape(title)}">
+<meta property="og:description" content="{H.escape(desc)}"><meta property="og:url" content="{H.escape(url)}">
+<meta property="og:image" content="{H.escape(url)}.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><link rel="icon" href="{H.escape(PUBLIC)}favicon.ico">{ga}
+<style>body{{margin:0;background:#f6f9fa;color:#12202f;font-family:"Noto Sans JP",system-ui,sans-serif;line-height:1.7}}
+main{{max-width:880px;margin:0 auto;padding:18px 16px 40px}}h1{{font-size:clamp(20px,4vw,28px);margin:6px 0 10px}}
+img{{width:100%;height:auto;display:block;border-radius:12px;box-shadow:0 2px 10px rgba(18,32,47,.1)}}
+.btns{{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 6px}}.btn{{display:inline-block;border-radius:999px;padding:9px 16px;font-weight:800;text-decoration:none;border:0;cursor:pointer;font-size:14.5px}}
+.x{{background:#0f1419;color:#fff}}.o{{background:#fff;color:#0a726b;border:2px solid #0a9a8f}}.go{{background:#0a9a8f;color:#fff}}
+.note{{color:#5d6b7a;font-size:13.5px}}ul{{padding-left:1.2em}}.panel{{background:#fff;border-radius:12px;padding:12px 16px;margin:14px 0;box-shadow:0 1px 4px rgba(18,32,47,.06)}}</style></head>
+<body><main><p class="note"><a href="{H.escape(PUBLIC)}?ref=kbousai-card">{H.escape(BRAND)}</a> › 防災カード</p>
+<h1>{H.escape(area)}の防災カード</h1>
+<img src="{H.escape(url)}.png" alt="{H.escape(title)}" width="1200" height="630">
+<div class="btns"><a class="btn x" href="{H.escape(share)}" target="_blank" rel="noopener">Xで共有</a>
+<button class="btn o" type="button" data-copy="{H.escape(label + chr(10) + url + '#ref=copy-kbousai-card')}" onclick="cp(this)">タイトルとURLをコピー</button>
+<a class="btn go" href="{H.escape(PUBLIC)}?ref=kbousai-card-try">自分の住所で確かめる</a></div>
+<p class="note">住所は載っていません（市区町村まで）。{H.escape(when)} に判定した、国の想定と自治体のハザードマップによる「想定」です。いま出ている警報や避難の情報ではありません。</p>
+<div class="panel"><ul>{rows}</ul></div>
+<p class="note">いまの警報・避難情報・雨の危険度は、住所か現在地で調べると、その場で出ます。最終的な確認は、市区町村のハザードマップで行ってください。</p>
+</main><script>function cp(b){{var t=b.getAttribute("data-copy");function ok(){{b.textContent="コピーしました"}}
+if(navigator.clipboard&&window.isSecureContext){{navigator.clipboard.writeText(t).then(ok)}}else{{var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();ok()}}}}</script></body></html>'''
+    return HTMLResponse(page, headers={'Cache-Control': 'public, max-age=600'})
 
 
 _ai_sem = threading.BoundedSemaphore(2)

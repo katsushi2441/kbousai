@@ -176,8 +176,25 @@ function shareBtn(j,an){
  var u=location.origin+location.pathname+'?ref=x-share-kbousai';
  var x='https://x.com/intent/post?'+new URLSearchParams({text:t,url:u,hashtags:'防災,'+j.area.replace(/^(北海道|東京都|京都府|大阪府|.{2,3}?県)/,'')}).toString();
  return '<p style="margin:10px 0 0"><a href="'+x+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#0f1419;color:#fff;text-decoration:none;font-weight:800;font-size:13.5px;border-radius:999px;padding:7px 14px">'
-  +'<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M18.9 2H22l-6.8 7.8L23 22h-6.2l-4.8-6.3L6.4 22H3.3l7.3-8.3L1 2h6.3l4.4 5.8L18.9 2Zm-1.1 18h1.7L6.3 3.9H4.5L17.8 20Z"/></svg>'+esc(j.area)+'の防災情報をXで共有</a><br><span class="note">住所は投稿に入りません（市区町村まで）</span></p>';
+  +'<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M18.9 2H22l-6.8 7.8L23 22h-6.2l-4.8-6.3L6.4 22H3.3l7.3-8.3L1 2h6.3l4.4 5.8L18.9 2Zm-1.1 18h1.7L6.3 3.9H4.5L17.8 20Z"/></svg>'+esc(j.area)+'の防災情報をXで共有</a><br><span class="note">住所は投稿に入りません（市区町村まで）</span></p>'
+  // 防災カード（この場所に想定されている災害を1枚の画像に。URLに住所は入らない）
+  +(j.token?'<p style="margin:8px 0 0"><button type="button" onclick="kbCard(this,\''+esc(j.token)+'\')" style="background:#0a9a8f;color:#fff;border:0;border-radius:999px;padding:7px 14px;font-weight:800;font-size:13.5px;cursor:pointer">この場所の防災カードを作る（Xに貼れます）</button><span class="kbcard"></span></p>':'');
 }
+// カードを作って、そのページへのリンク・コピー・Xで共有を出す
+window.kbCard=function(b,tok){
+ b.disabled=true;b.textContent='カードを作っています…';
+ fetch('api/card?token='+encodeURIComponent(tok)).then(function(r){return r.json().then(function(x){if(!r.ok)throw new Error(x.detail||'作れませんでした');return x})}).then(function(x){
+  var label=x.area+'の防災カード（この場所に想定されている災害）';
+  var xu='https://x.com/intent/post?'+new URLSearchParams({text:'【'+x.area+'】この場所に想定されている災害を1枚にしました。自分の住所でも確かめられます',url:x.url+'#ref=x-share-kbousai-card'}).toString();
+  b.style.display='none';
+  b.nextElementSibling.innerHTML='<a href="'+esc(x.url)+'" target="_blank" rel="noopener"><img src="'+esc(x.image)+'" alt="防災カード" style="width:100%;max-width:520px;height:auto;display:block;border-radius:10px;margin:6px 0"></a>'
+   +'<a href="'+esc(xu)+'" target="_blank" rel="noopener" style="display:inline-block;background:#0f1419;color:#fff;text-decoration:none;font-weight:800;font-size:13.5px;border-radius:999px;padding:7px 14px;margin-right:8px">カードをXで共有</a>'
+   +'<button type="button" data-copy="'+esc(label+'\n'+x.url+'#ref=copy-kbousai-card')+'" onclick="kbCopy(this)" style="background:#fff;color:#0a726b;border:2px solid #0a9a8f;border-radius:999px;padding:5px 12px;font-weight:800;font-size:13.5px;cursor:pointer">タイトルとURLをコピー</button>'
+   +'<br><span class="note">カードには住所は入りません（市区町村まで）。想定（平時のハザードマップ）だけで、いまの警報は入りません。</span>';
+ }).catch(function(e){b.disabled=false;b.textContent='この場所の防災カードを作る（Xに貼れます）';alert(e.message)});
+};
+window.kbCopy=function(b){var t=b.getAttribute('data-copy');function ok(){b.textContent='コピーしました'}
+ if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(ok)}else{var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();ok()}};
 function lvBadge(l){return l>=2?'<span class="lv lv'+l+'">警戒レベル'+l+'相当</span>':'<span class="lv lv0">警戒レベル相当の情報なし</span>'}
 function na(d){return !d||d.status==='unavailable'||d.status==='busy'}
 function naText(d){return '<p class="na">'+(d&&d.status==='busy'?'混み合っていて取得できませんでした。':'取得できませんでした。')+'「無い」という意味ではありません。</p>'}

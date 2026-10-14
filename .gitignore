@@ -5,3 +5,6 @@ outputs/
 .env
 *.pyc
 demo/mlit-dpf-mcp/
+
+# 利用者が作った防災カード（市区町村と想定の行だけ。gitに入れない）
+data/cards/
